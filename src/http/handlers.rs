@@ -15,6 +15,10 @@ pub async fn help() -> impl IntoResponse {
     HtmlTemplate(template)
 }
 
+pub async fn api() -> &'static str {
+    "Hello"
+}
+
 #[derive(Template)]
 #[template(path = "home.html")]
 struct HomeTemplate;

@@ -11,6 +11,10 @@ pub fn public() -> Router {
         .route("/help", get(handlers::help))
 }
 
+pub fn api() -> Router {
+    Router::new().nest("/v1", Router::new().route("/hello", get(handlers::api)))
+}
+
 pub fn assets() -> Router {
     Router::new().nest_service(
         "/",

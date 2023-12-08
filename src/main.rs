@@ -20,6 +20,7 @@ async fn main() {
 
     let app = Router::new()
         .nest_service("/", http::routing::public())
+        .nest_service("/api", http::routing::api())
         .nest_service("/assets", http::routing::assets())
         .fallback(http::routing::fallback());
 
