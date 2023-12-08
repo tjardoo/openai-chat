@@ -873,6 +873,7 @@ dependencies = [
  "dotenv",
  "fern",
  "openai_dive",
+ "serde",
  "tokio",
  "tower-http",
  "tracing",

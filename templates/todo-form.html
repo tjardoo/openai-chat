@@ -1,0 +1,9 @@
+<form class="flex space-x-4">
+	<input name="todo" id="todo" class="block w-full rounded-md text-gray-800 border border-gray-300 shadow-sm focus:ring-0" placeholder="Add your todo.." />
+
+	<button class="bg-blue-500 text-white rounded-md hove:bg-blue-700 px-4 py-1.5" hx-post="/api/v1/todos" hx-target="#todos" hx-swap="innerHtml">Add</button>
+</form>
+
+<p class="mb-2">Todo items:</p>
+
+<div id="todos" />

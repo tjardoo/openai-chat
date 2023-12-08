@@ -1,11 +1,16 @@
 use axum::Router;
 use colored::*;
 use dotenv::dotenv;
-use std::env;
+use std::{env, sync::Arc};
+use tokio::sync::Mutex;
 use tracing::info;
 
 pub mod http;
 pub mod logging;
+
+pub struct AppState {
+    todos: Mutex<Vec<String>>,
+}
 
 #[tokio::main]
 async fn main() {
@@ -18,9 +23,13 @@ async fn main() {
 
     let app_url_port = format!("{}:{}", app_url, app_port);
 
+    let app_state = Arc::new(AppState {
+        todos: Mutex::new(vec![]),
+    });
+
     let app = Router::new()
         .nest_service("/", http::routing::public())
-        .nest_service("/api", http::routing::api())
+        .nest_service("/api", http::routing::api().with_state(app_state))
         .nest_service("/assets", http::routing::assets())
         .fallback(http::routing::fallback());
 
