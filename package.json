@@ -1,0 +1,14 @@
+{
+  "name": "openai-chat",
+  "version": "1.0.0",
+  "scripts": {
+    "watch": "npx tailwindcss -i ./resources/css/app.css -o ./assets/css/app.css --watch",
+    "build": "npx tailwindcss -i ./resources/css/app.css -o ./assets/css/app.css",
+    "format": "prettier --write --ignore-unknown ."
+  },
+  "devDependencies": {
+    "prettier": "^3.1.0",
+    "prettier-plugin-tailwindcss": "^0.5.9",
+    "tailwindcss": "^3.3.6"
+  }
+}
