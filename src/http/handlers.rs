@@ -1,8 +1,12 @@
 use crate::AppState;
 use askama::Template;
-use axum::{extract::State, response::IntoResponse, Form};
+use axum::{
+    extract::{Path, State},
+    response::IntoResponse,
+    Form,
+};
 use serde::{Deserialize, Serialize};
-use std::sync::Arc;
+use std::{fmt::Display, sync::Arc};
 
 use super::templating::HtmlTemplate;
 
@@ -18,10 +22,6 @@ pub async fn help() -> impl IntoResponse {
     HtmlTemplate(template)
 }
 
-pub async fn api() -> &'static str {
-    "Hello"
-}
-
 pub async fn add_todo(
     State(state): State<Arc<AppState>>,
     Form(request): Form<TodoRequest>,
@@ -31,15 +31,41 @@ pub async fn add_todo(
     lock.push(request.todo);
 
     let template = TodoListTemplate {
-        todos: lock.clone(),
+        todos: lock
+            .iter()
+            .enumerate()
+            .map(|(id, description)| Todo {
+                id: id as u32,
+                description: description.clone(),
+            })
+            .collect::<Vec<Todo>>(),
     };
 
     HtmlTemplate(template)
 }
 
+pub async fn get_todo(
+    Path(id): Path<u32>,
+    State(state): State<Arc<AppState>>,
+) -> impl IntoResponse {
+    let lock = state.todos.lock().await;
+
+    if let Some(todo) = lock.get(id as usize).cloned() {
+        todo
+    } else {
+        "Todo not found".to_string()
+    }
+}
+
 #[derive(Serialize, Deserialize)]
 pub struct TodoRequest {
     todo: String,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct Todo {
+    pub id: u32,
+    pub description: String,
 }
 
 #[derive(Template)]
@@ -53,5 +79,11 @@ struct HelpTemplate;
 #[derive(Template)]
 #[template(path = "todo-list.html")]
 pub struct TodoListTemplate {
-    pub todos: Vec<String>,
+    pub todos: Vec<Todo>,
+}
+
+impl Display for Todo {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}: {}", self.id, self.description)
+    }
 }
