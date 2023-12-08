@@ -11,8 +11,13 @@
 ### Dependencies
 
 ```bash
-npm install
+cargo install sqlx-cli
 cargo install cargo-watch
+sqlx migrate run
+```
+
+```bash
+npm install
 ```
 
 ### Environment Variables
@@ -24,7 +29,7 @@ Copy `.env.example` to `.env` and update the variables.
 ### Production
 
 ```bash
-npm run dev
+npm run prod
 cargo run
 ```
 

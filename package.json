@@ -3,7 +3,7 @@
 	"version": "1.0.0",
 	"scripts": {
 		"watch": "npx tailwindcss -i ./resources/css/app.css -o ./assets/css/app.css --watch",
-		"build": "npx tailwindcss -i ./resources/css/app.css -o ./assets/css/app.css",
+		"prod": "npx tailwindcss -i ./resources/css/app.css -o ./assets/css/app.css",
 		"format": "prettier --write --ignore-unknown ."
 	},
 	"devDependencies": {

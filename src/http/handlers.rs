@@ -1,12 +1,14 @@
-use crate::AppState;
 use askama::Template;
 use axum::{
     extract::{Path, State},
+    http::StatusCode,
     response::IntoResponse,
-    Form,
+    Form, Json,
 };
 use serde::{Deserialize, Serialize};
-use std::{fmt::Display, sync::Arc};
+use std::sync::Arc;
+
+use crate::{models::Todo, state::AppState};
 
 use super::templating::HtmlTemplate;
 
@@ -22,50 +24,32 @@ pub async fn help() -> impl IntoResponse {
     HtmlTemplate(template)
 }
 
-pub async fn add_todo(
-    State(state): State<Arc<AppState>>,
-    Form(request): Form<TodoRequest>,
+pub async fn index_todo(
+    State(_state): State<Arc<AppState>>,
+    Form(_request): Form<TodoRequest>,
 ) -> impl IntoResponse {
-    let mut lock = state.todos.lock().await;
-
-    lock.push(request.todo);
-
-    let template = TodoListTemplate {
-        todos: lock
-            .iter()
-            .enumerate()
-            .map(|(id, description)| Todo {
-                id: id as u32,
-                description: description.clone(),
-            })
-            .collect::<Vec<Todo>>(),
-    };
+    let template = TodoListTemplate { todos: vec![] };
 
     HtmlTemplate(template)
 }
 
-pub async fn get_todo(
+pub async fn show_todo(
     Path(id): Path<u32>,
     State(state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
-    let lock = state.todos.lock().await;
-
-    if let Some(todo) = lock.get(id as usize).cloned() {
-        todo
-    } else {
-        "Todo not found".to_string()
+    match sqlx::query_as::<_, Todo>("SELECT * FROM todos where id = ?")
+        .bind(id)
+        .fetch_one(&state.pool)
+        .await
+    {
+        Ok(todo) => Ok((StatusCode::OK, Json(todo))),
+        Err(error) => Err((StatusCode::NOT_FOUND, error.to_string())),
     }
 }
 
 #[derive(Serialize, Deserialize)]
 pub struct TodoRequest {
     todo: String,
-}
-
-#[derive(Serialize, Deserialize)]
-pub struct Todo {
-    pub id: u32,
-    pub description: String,
 }
 
 #[derive(Template)]
@@ -80,10 +64,4 @@ struct HelpTemplate;
 #[template(path = "todo-list.html")]
 pub struct TodoListTemplate {
     pub todos: Vec<Todo>,
-}
-
-impl Display for Todo {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}: {}", self.id, self.description)
-    }
 }

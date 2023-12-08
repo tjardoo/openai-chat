@@ -1,9 +1,10 @@
-use crate::AppState;
 use axum::http::StatusCode;
 use axum::routing::{get, post};
 use axum::Router;
 use std::sync::Arc;
 use tower_http::services::ServeDir;
+
+use crate::state::AppState;
 
 use super::handlers;
 
@@ -17,8 +18,8 @@ pub fn api() -> Router<Arc<AppState>> {
     Router::new().nest(
         "/v1",
         Router::new()
-            .route("/todos", post(handlers::add_todo))
-            .route("/todos/:id", get(handlers::get_todo)),
+            .route("/todos", post(handlers::index_todo))
+            .route("/todos/:id", get(handlers::show_todo)),
     )
 }
 

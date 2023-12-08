@@ -2,15 +2,13 @@ use axum::Router;
 use colored::*;
 use dotenv::dotenv;
 use std::{env, sync::Arc};
-use tokio::sync::Mutex;
 use tracing::info;
 
+pub mod database;
 pub mod http;
 pub mod logging;
-
-pub struct AppState {
-    todos: Mutex<Vec<String>>,
-}
+pub mod models;
+pub mod state;
 
 #[tokio::main]
 async fn main() {
@@ -18,14 +16,16 @@ async fn main() {
 
     logging::setup_logging().expect("Failed to set up logging");
 
+    let db_pool = database::setup_database()
+        .await
+        .expect("Failed to set up database");
+
     let app_url = env::var("APP_URL").expect("$APP_URL is not set");
     let app_port = env::var("APP_PORT").expect("$APP_PORT is not set");
 
     let app_url_port = format!("{}:{}", app_url, app_port);
 
-    let app_state = Arc::new(AppState {
-        todos: Mutex::new(vec![]),
-    });
+    let app_state = Arc::new(state::AppState { pool: db_pool });
 
     let app = Router::new()
         .nest_service("/", http::routing::public())

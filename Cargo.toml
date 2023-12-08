@@ -17,3 +17,9 @@ openai_dive = "0.3.4"
 tracing = "0.1.40"
 tracing-subscriber = "0.3.18"
 serde = { version = "1.0.193", features = ["derive"] }
+sqlx = { version = "0.7.3", default_features = false, features = [
+    "runtime-tokio-native-tls",
+    "mysql",
+    "macros",
+    "chrono",
+] }
