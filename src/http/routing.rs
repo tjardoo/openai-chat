@@ -18,7 +18,8 @@ pub fn api() -> Router<Arc<AppState>> {
     Router::new().nest(
         "/v1",
         Router::new()
-            .route("/todos", post(handlers::index_todo))
+            .route("/todos", get(handlers::index_todo))
+            .route("/todos", post(handlers::store_todo))
             .route("/todos/:id", get(handlers::show_todo)),
     )
 }

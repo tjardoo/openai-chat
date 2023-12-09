@@ -1,7 +1,9 @@
-use axum::Router;
+use axum::{extract::Request, Router, ServiceExt};
 use colored::*;
 use dotenv::dotenv;
 use std::{env, sync::Arc};
+use tower::Layer;
+use tower_http::normalize_path::NormalizePathLayer;
 use tracing::info;
 
 pub mod database;
@@ -27,11 +29,15 @@ async fn main() {
 
     let app_state = Arc::new(state::AppState { pool: db_pool });
 
-    let app = Router::new()
+    let middleware_wrapper = NormalizePathLayer::trim_trailing_slash();
+
+    let router: Router<_> = Router::new()
         .nest_service("/", http::routing::public())
         .nest_service("/api", http::routing::api().with_state(app_state))
         .nest_service("/assets", http::routing::assets())
         .fallback(http::routing::fallback());
+
+    let app = middleware_wrapper.layer(router);
 
     let listener = tokio::net::TcpListener::bind(&app_url_port).await.unwrap();
 
@@ -48,5 +54,7 @@ async fn main() {
         "Press Ctrl+C to stop the server".bright_yellow().bold()
     );
 
-    axum::serve(listener, app).await.unwrap();
+    axum::serve(listener, ServiceExt::<Request>::into_make_service(app))
+        .await
+        .unwrap();
 }
