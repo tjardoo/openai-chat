@@ -7,5 +7,6 @@ pub struct AppState {
 
 #[derive(Deserialize, Serialize)]
 pub struct JsonError {
+    pub code: u16,
     pub error: String,
 }

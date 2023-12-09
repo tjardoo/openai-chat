@@ -1249,6 +1249,7 @@ dependencies = [
  "fern",
  "openai_dive",
  "serde",
+ "serde_json",
  "sqlx",
  "tokio",
  "tower",
