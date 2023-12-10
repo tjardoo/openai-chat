@@ -25,7 +25,7 @@ pub enum ValidationError {
 #[derive(Serialize, Debug)]
 pub struct FieldError {
     code: String,
-    params: Vec<String>,
+    params: Vec<(String, String)>,
 }
 
 impl std::fmt::Display for ValidationErrors {
@@ -85,7 +85,13 @@ where
                                         params: field_error
                                             .params
                                             .iter()
-                                            .map(|param| param.clone().0.to_string())
+                                            .filter(|param| param.0 != "value")
+                                            .map(|param| {
+                                                (
+                                                    param.clone().0.to_string(),
+                                                    param.clone().1.to_string(),
+                                                )
+                                            })
                                             .collect(),
                                     },
                                 )
