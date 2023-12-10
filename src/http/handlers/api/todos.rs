@@ -36,19 +36,10 @@ pub async fn store(
     State(state): State<Arc<AppState>>,
     ValidatedJson(request): ValidatedJson<StoreTodoRequest>,
 ) -> Result<(StatusCode, Json<Todo>), (StatusCode, Json<JsonError>)> {
-    // if request.validate().is_err() {
-    //     return Err((
-    //         StatusCode::BAD_REQUEST,
-    //         Json(JsonError {
-    //             code: StatusCode::BAD_REQUEST.as_u16(),
-    //             error: "Bad Request".to_string(),
-    //         }),
-    //     ));
-    // }
-
     let last_inserted_id = sqlx::query_as!(
         Todo,
-        "INSERT INTO todos (description) VALUES (?)",
+        "INSERT INTO todos (title, description) VALUES (?, ?)",
+        request.title,
         request.description
     )
     .execute(&state.pool)
@@ -93,11 +84,12 @@ pub async fn show(
 pub async fn update(
     Path(id): Path<u32>,
     State(state): State<Arc<AppState>>,
-    Json(request): Json<UpdateTodoRequest>,
+    ValidatedJson(request): ValidatedJson<UpdateTodoRequest>,
 ) -> Result<(StatusCode, Json<Todo>), (StatusCode, Json<JsonError>)> {
     sqlx::query_as!(
         Todo,
-        "UPDATE todos SET description = ? WHERE id = ?",
+        "UPDATE todos SET title = ?, description = ? WHERE id = ?",
+        request.title,
         request.description,
         id
     )

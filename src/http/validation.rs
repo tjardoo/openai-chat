@@ -18,7 +18,7 @@ pub struct ValidationErrors {
 #[derive(Debug)]
 pub enum ValidationError {
     Struct(String),
-    Field(String),
+    Fields(Vec<(String, Vec<String>)>),
 }
 
 impl std::fmt::Display for ValidationErrors {
@@ -31,7 +31,9 @@ impl std::fmt::Display for ValidationError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             ValidationError::Struct(message) => write!(f, "Struct: {}", message),
-            ValidationError::Field(message) => write!(f, "Field: {}", message),
+            ValidationError::Fields(message) => {
+                write!(f, "Field: {}", serde_json::to_string(message).unwrap())
+            }
         }
     }
 }
@@ -61,16 +63,24 @@ where
                     errors: ValidationError::Struct(error.body_text().to_string()),
                 })?;
 
-        json.validate().map_err(|errors| ValidationErrors {
-            errors: ValidationError::Field(
-                errors
-                    .errors()
-                    .into_iter()
-                    .map(|(key, _value)| key.to_string())
-                    .collect::<Vec<_>>()
-                    .join(", "),
-            ),
-        })?;
+        json.validate()
+            .map_err(|validation_errors| ValidationErrors {
+                errors: ValidationError::Fields(
+                    validation_errors
+                        .field_errors()
+                        .iter()
+                        .map(|(field, field_errors)| {
+                            (
+                                field.to_string(),
+                                field_errors
+                                    .into_iter()
+                                    .map(|field_error| field_error.code.to_string())
+                                    .collect(),
+                            )
+                        })
+                        .collect(),
+                ),
+            })?;
 
         Ok(ValidatedJson(json))
     }
