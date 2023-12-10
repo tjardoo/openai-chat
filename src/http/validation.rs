@@ -5,6 +5,7 @@ use axum::{
     http::StatusCode,
     Json,
 };
+use serde::Serialize;
 use std::error::Error;
 use validator::Validate;
 
@@ -15,10 +16,16 @@ pub struct ValidationErrors {
     errors: ValidationError,
 }
 
-#[derive(Debug)]
+#[derive(Serialize, Debug)]
 pub enum ValidationError {
     Struct(String),
-    Fields(Vec<(String, Vec<String>)>),
+    Fields(Vec<(String, FieldError)>),
+}
+
+#[derive(Serialize, Debug)]
+pub struct FieldError {
+    code: String,
+    params: Vec<String>,
 }
 
 impl std::fmt::Display for ValidationErrors {
@@ -69,14 +76,20 @@ where
                     validation_errors
                         .field_errors()
                         .iter()
-                        .map(|(field, field_errors)| {
-                            (
-                                field.to_string(),
-                                field_errors
-                                    .into_iter()
-                                    .map(|field_error| field_error.code.to_string())
-                                    .collect(),
-                            )
+                        .flat_map(|(field, field_errors)| {
+                            field_errors.into_iter().map(|field_error| {
+                                (
+                                    field.to_string(),
+                                    FieldError {
+                                        code: field_error.code.to_string(),
+                                        params: field_error
+                                            .params
+                                            .iter()
+                                            .map(|param| param.clone().0.to_string())
+                                            .collect(),
+                                    },
+                                )
+                            })
                         })
                         .collect(),
                 ),
