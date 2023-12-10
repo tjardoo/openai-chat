@@ -6,7 +6,10 @@ use axum::{
 use std::sync::Arc;
 
 use crate::{
-    http::requests::todos::{StoreTodoRequest, UpdateTodoRequest},
+    http::{
+        requests::todos::{StoreTodoRequest, UpdateTodoRequest},
+        validation::ValidatedJson,
+    },
     models::Todo,
     state::{AppState, JsonError},
 };
@@ -31,8 +34,18 @@ pub async fn index(
 
 pub async fn store(
     State(state): State<Arc<AppState>>,
-    Json(request): Json<StoreTodoRequest>,
+    ValidatedJson(request): ValidatedJson<StoreTodoRequest>,
 ) -> Result<(StatusCode, Json<Todo>), (StatusCode, Json<JsonError>)> {
+    // if request.validate().is_err() {
+    //     return Err((
+    //         StatusCode::BAD_REQUEST,
+    //         Json(JsonError {
+    //             code: StatusCode::BAD_REQUEST.as_u16(),
+    //             error: "Bad Request".to_string(),
+    //         }),
+    //     ));
+    // }
+
     let last_inserted_id = sqlx::query_as!(
         Todo,
         "INSERT INTO todos (description) VALUES (?)",

@@ -25,3 +25,4 @@ sqlx = { version = "0.7.3", default_features = false, features = [
     "macros",
     "chrono",
 ] }
+validator = { version = "0.16.1", features = ["derive"] }
