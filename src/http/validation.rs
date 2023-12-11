@@ -17,6 +17,7 @@ pub struct ValidationErrors {
 }
 
 #[derive(Serialize, Debug)]
+#[serde(untagged)]
 pub enum ValidationError {
     Struct(String),
     Fields(Vec<(String, FieldError)>),
@@ -37,9 +38,9 @@ impl std::fmt::Display for ValidationErrors {
 impl std::fmt::Display for ValidationError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            ValidationError::Struct(message) => write!(f, "Struct: {}", message),
+            ValidationError::Struct(message) => write!(f, "{}", message),
             ValidationError::Fields(message) => {
-                write!(f, "Field: {}", serde_json::to_string(message).unwrap())
+                write!(f, "{}", serde_json::to_string(message).unwrap())
             }
         }
     }
@@ -49,7 +50,7 @@ impl Error for ValidationErrors {}
 
 impl IntoResponse for ValidationErrors {
     fn into_response(self) -> axum::response::Response {
-        (StatusCode::BAD_REQUEST, self.errors.to_string()).into_response()
+        (StatusCode::BAD_REQUEST, Json(self.errors)).into_response()
     }
 }
 
