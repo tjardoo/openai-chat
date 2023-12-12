@@ -10,14 +10,14 @@ use crate::{
         requests::todos::{StoreTodoRequest, UpdateTodoRequest},
         validation::ValidatedJson,
     },
-    models::Todo,
+    models::todo::Todo,
     state::{AppState, JsonError},
 };
 
 pub async fn index(
     State(state): State<Arc<AppState>>,
 ) -> Result<(StatusCode, Json<Vec<Todo>>), (StatusCode, Json<JsonError>)> {
-    match sqlx::query_as!(Todo, "SELECT * FROM todos")
+    match sqlx::query_as!(Todo, "SELECT id, title, description FROM todos")
         .fetch_all(&state.pool)
         .await
     {
@@ -47,9 +47,13 @@ pub async fn store(
     .unwrap()
     .last_insert_id();
 
-    match sqlx::query_as!(Todo, "SELECT * FROM todos where id = ?", last_inserted_id)
-        .fetch_one(&state.pool)
-        .await
+    match sqlx::query_as!(
+        Todo,
+        "SELECT id, title, description FROM todos where id = ?",
+        last_inserted_id
+    )
+    .fetch_one(&state.pool)
+    .await
     {
         Ok(todo) => Ok((StatusCode::CREATED, Json(todo))),
         Err(error) => Err((
@@ -66,9 +70,13 @@ pub async fn show(
     Path(id): Path<u32>,
     State(state): State<Arc<AppState>>,
 ) -> Result<(StatusCode, Json<Todo>), (StatusCode, Json<JsonError>)> {
-    match sqlx::query_as!(Todo, "SELECT * FROM todos where id = ?", id)
-        .fetch_one(&state.pool)
-        .await
+    match sqlx::query_as!(
+        Todo,
+        "SELECT id, title, description FROM todos where id = ?",
+        id
+    )
+    .fetch_one(&state.pool)
+    .await
     {
         Ok(todo) => Ok((StatusCode::OK, Json(todo))),
         Err(error) => Err((
@@ -97,9 +105,13 @@ pub async fn update(
     .await
     .unwrap();
 
-    match sqlx::query_as!(Todo, "SELECT * FROM todos where id = ?", id)
-        .fetch_one(&state.pool)
-        .await
+    match sqlx::query_as!(
+        Todo,
+        "SELECT id, title, description FROM todos where id = ?",
+        id
+    )
+    .fetch_one(&state.pool)
+    .await
     {
         Ok(todo) => Ok((StatusCode::OK, Json(todo))),
         Err(error) => Err((
@@ -116,9 +128,20 @@ pub async fn destroy(
     Path(id): Path<u32>,
     State(state): State<Arc<AppState>>,
 ) -> Result<(StatusCode, Json<String>), (StatusCode, Json<JsonError>)> {
-    match sqlx::query_as!(Todo, "SELECT * FROM todos where id = ?", id)
-        .fetch_one(&state.pool)
-        .await
+    match sqlx::query_as!(
+        Todo,
+        "SELECT
+            id,
+            title,
+            description
+        FROM
+            todos
+        WHERE
+            id = ?",
+        id
+    )
+    .fetch_one(&state.pool)
+    .await
     {
         Ok(_) => {
             sqlx::query_as!(Todo, "DELETE FROM todos where id = ?", id)

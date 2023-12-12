@@ -24,13 +24,29 @@ pub fn fallback() -> (StatusCode, &'static str) {
 }
 
 pub fn api() -> Router<Arc<AppState>> {
+    let todos_router = Router::new()
+        .route("/", get(handlers::api::todos::index))
+        .route("/", post(handlers::api::todos::store))
+        .route("/:id", get(handlers::api::todos::show))
+        .route("/:id", patch(handlers::api::todos::update))
+        .route("/:id", delete(handlers::api::todos::destroy));
+
+    let models_router = Router::new().route("/", get(handlers::api::models::index));
+
+    let chats_router = Router::new()
+        .route("/", get(handlers::api::chats::index))
+        .route("/:id", get(handlers::api::chats::show));
+
+    let messages_router = Router::new().route("/", get(handlers::api::messages::index));
+
     Router::new().nest(
         "/v1",
         Router::new()
-            .route("/todos", get(handlers::api::todos::index))
-            .route("/todos", post(handlers::api::todos::store))
-            .route("/todos/:id", get(handlers::api::todos::show))
-            .route("/todos/:id", patch(handlers::api::todos::update))
-            .route("/todos/:id", delete(handlers::api::todos::destroy)),
+            .nest("/todos", todos_router)
+            .nest("/models", models_router)
+            .nest(
+                "/chats",
+                chats_router.nest("/:id/messages", messages_router),
+            ),
     )
 }
