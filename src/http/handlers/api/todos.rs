@@ -17,9 +17,17 @@ use crate::{
 pub async fn index(
     State(state): State<Arc<AppState>>,
 ) -> Result<(StatusCode, Json<Vec<Todo>>), (StatusCode, Json<JsonError>)> {
-    match sqlx::query_as!(Todo, "SELECT id, title, description FROM todos")
-        .fetch_all(&state.pool)
-        .await
+    match sqlx::query_as!(
+        Todo,
+        "SELECT
+            id,
+            title,
+            description
+        FROM
+            todos"
+    )
+    .fetch_all(&state.pool)
+    .await
     {
         Ok(todos) => Ok((StatusCode::OK, Json(todos))),
         Err(error) => Err((
@@ -49,7 +57,14 @@ pub async fn store(
 
     match sqlx::query_as!(
         Todo,
-        "SELECT id, title, description FROM todos where id = ?",
+        "SELECT
+            id,
+            title,
+            description
+        FROM
+            todos
+        WHERE
+            id = ?",
         last_inserted_id
     )
     .fetch_one(&state.pool)
@@ -72,7 +87,14 @@ pub async fn show(
 ) -> Result<(StatusCode, Json<Todo>), (StatusCode, Json<JsonError>)> {
     match sqlx::query_as!(
         Todo,
-        "SELECT id, title, description FROM todos where id = ?",
+        "SELECT
+            id,
+            title,
+            description
+        FROM
+            todos
+        WHERE
+            id = ?",
         id
     )
     .fetch_one(&state.pool)
@@ -107,7 +129,14 @@ pub async fn update(
 
     match sqlx::query_as!(
         Todo,
-        "SELECT id, title, description FROM todos where id = ?",
+        "SELECT
+            id,
+            title,
+            description
+        FROM
+            todos
+        WHERE
+            id = ?",
         id
     )
     .fetch_one(&state.pool)

@@ -7,7 +7,7 @@ pub struct Message {
     pub id: u32,
     pub chat_id: u32,
     pub role: Role,
-    pub description: String,
+    pub content: String,
     pub created_at: DateTime<Utc>,
 }
 

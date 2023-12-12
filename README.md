@@ -38,4 +38,6 @@ cargo run
 ```bash
 npm run watch
 cargo watch -x run
+sqlx migrate revert
+sqlx database reset
 ```
