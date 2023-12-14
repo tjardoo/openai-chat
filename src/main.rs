@@ -1,4 +1,8 @@
-use axum::{extract::Request, Router, ServiceExt};
+use axum::{
+    extract::Request,
+    http::{HeaderValue, Method},
+    Router, ServiceExt,
+};
 use colored::*;
 use dotenv::dotenv;
 use std::{env, sync::Arc};
@@ -37,6 +41,17 @@ async fn main() {
         .nest_service("/api", http::routing::api().with_state(app_state.clone()))
         .nest_service("/chat", http::routing::chat().with_state(app_state.clone()))
         .nest_service("/assets", http::routing::assets())
+        .layer(
+            tower_http::cors::CorsLayer::new()
+                .allow_methods(vec![
+                    Method::GET,
+                    Method::POST,
+                    Method::PATCH,
+                    Method::DELETE,
+                ])
+                .allow_origin(app_url_port.parse::<HeaderValue>().unwrap())
+                .allow_headers([axum::http::header::CONTENT_TYPE]),
+        )
         .fallback(http::routing::fallback());
 
     let app = middleware_wrapper.layer(router);
