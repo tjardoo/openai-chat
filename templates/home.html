@@ -5,4 +5,29 @@
 
 {% block content %}
 <h1 class="text-3xl font-bold underline">Home</h1>
+
+// create page for chat with :chatid on home page  list all chats + create new
+
+<button
+    type="button"
+    hx-get="/internal/fetch-models"
+    hx-target="#models"
+    hx-swap="innerHtml"
+    class="bg-blue-500 rounded-md hover:bg-blue-700 px-4 py-2 text-white font-semibold mx-2"
+    >
+        Fetch models
+</button>
+
+<div id="models"></div>
+
+<select>
+    {% for model in models %}
+    <option value="{{ model.id }}">{{ model.name }}</option>
+    {% endfor %}
+</select>
+
+<textarea>
+
+</textarea>
+
 {% endblock %}

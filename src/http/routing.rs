@@ -19,6 +19,10 @@ pub fn assets() -> Router {
     )
 }
 
+pub fn internal() -> Router {
+    Router::new().route("/fetch-models", get(handlers::internal::fetch_models))
+}
+
 pub fn fallback() -> (StatusCode, &'static str) {
     (StatusCode::NOT_FOUND, "Not Found")
 }
@@ -40,6 +44,7 @@ pub fn api() -> Router<Arc<AppState>> {
 
     let messages_router = Router::new()
         .route("/", get(handlers::api::messages::index))
+        .route("/", post(handlers::api::messages::store))
         .route("/:id", get(handlers::api::messages::show));
 
     Router::new().nest(

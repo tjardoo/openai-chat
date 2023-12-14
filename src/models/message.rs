@@ -5,6 +5,7 @@ use sqlx::prelude::FromRow;
 #[derive(Serialize, Deserialize, FromRow)]
 pub struct Message {
     pub id: u32,
+    #[serde(skip_serializing)]
     pub chat_id: u32,
     pub role: Role,
     pub content: String,
