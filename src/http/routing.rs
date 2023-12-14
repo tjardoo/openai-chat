@@ -12,6 +12,10 @@ pub fn public() -> Router {
     Router::new().route("/", get(handlers::web::home))
 }
 
+pub fn chat() -> Router<Arc<AppState>> {
+    Router::new().route("/:id", get(handlers::chat::show))
+}
+
 pub fn assets() -> Router {
     Router::new().nest_service(
         "/",

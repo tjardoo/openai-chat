@@ -34,7 +34,8 @@ async fn main() {
     let router: Router<_> = Router::new()
         .nest_service("/", http::routing::public())
         .nest_service("/internal", http::routing::internal())
-        .nest_service("/api", http::routing::api().with_state(app_state))
+        .nest_service("/api", http::routing::api().with_state(app_state.clone()))
+        .nest_service("/chat", http::routing::chat().with_state(app_state.clone()))
         .nest_service("/assets", http::routing::assets())
         .fallback(http::routing::fallback());
 

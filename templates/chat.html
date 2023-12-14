@@ -1,0 +1,30 @@
+<!-- prettier-ignore -->
+{% extends "base.html" %}
+
+{% block title %}Hello!{% endblock %}
+
+{% block content %}
+<h1 class="text-3xl font-bold underline">Chat: {{ chat.title }}</h1>
+
+<div>
+    {% for message in messages %}
+    <div>
+        <span class="font-bold">{{ message.role }}</span>
+        {{ message.content }}
+    </div>
+    {% endfor %}
+</div>
+
+<form hx-post="/api/v1/chats/{{ chat.id }}/messages" json-enc hx-headers="{"Content-Type": "application/json"}">
+    <input type="hidden" name="role" value="user">
+
+    <input type="text" name="content">
+
+    <button
+        type="submit"
+        class="bg-blue-500 rounded-md hover:bg-blue-700 px-4 py-2 text-white font-semibold mx-2"
+    >
+        Send
+    </button>
+</form>
+{% endblock %}
