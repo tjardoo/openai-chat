@@ -62,11 +62,11 @@ pub async fn store(
     .last_insert_id();
 
     // @todo add to db
-    let chat_completion_response = crate::dive::send_message(&state.pool, chat_id)
-        .await
-        .unwrap();
+    // let chat_completion_response = crate::dive::send_message(&state.pool, chat_id)
+    //     .await
+    //     .unwrap();
 
-    println!("{:?}", chat_completion_response);
+    // println!("{:?}", chat_completion_response);
 
     match sqlx::query_as!(
         Message,

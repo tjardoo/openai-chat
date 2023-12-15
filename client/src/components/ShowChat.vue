@@ -13,6 +13,8 @@ const props = defineProps({
 const isLoading = ref<boolean>(false)
 const messages = ref<Array<Message>>([])
 
+
+
 watch(() => props.selectedChat, (first, second) => {
     if(first == undefined) {
         return;
@@ -31,23 +33,40 @@ watch(() => props.selectedChat, (first, second) => {
             isLoading.value = false
         })
         .catch(err => console.log(err))
-});
+}, { immediate: true });
 </script>
 
 <template>
-	<h1 className="text-3xl font-bold underline text-blue-500">Show chat {{ props.selectedChat ?? 'X' }}</h1>
+    <div class="overflow-y-auto">
+        <div v-if="isLoading">
+            Loading...
+        </div>
 
-    <div v-if="isLoading">
-        Loading...
-    </div>
+        <div
+            v-for="message in messages"
+            :key="message.created_at"
+            class="flex my-1"
+            :class="{
+                'justify-start': message.role === 'assistant',
+                'justify-end': message.role === 'user'
+            }"
+        >
+            <div class="flex flex-col">
+                <div
+                    class="px-3 py-1 font-light rounded-full"
+                    :class="{
+                        'text-left bg-gray-300 text-gray-700': message.role === 'assistant',
+                        'text-right bg-blue-600 text-white': message.role === 'user'
+                    }"
+                >
+                    {{ message.content }}
+                </div>
+                <div class="text-right">
+                    <span class="text-[10px] text-gray-400">{{ message.created_at }}</span>
+                </div>
+            </div>
+        </div>
 
-    <div
-        v-for="message in messages"
-        :key="message.created_at"
-    >
-        <p>
-            <span class="font-bold">{{ message.role }}</span>:
-            {{ message.content }}
-        </p>
+        <div id="anchor"></div>
     </div>
 </template>

@@ -21,15 +21,34 @@ const sendMessage = () => {
         .then(response => response.json())
         .then((data: Message) => {
             isLoading.value = false
+
+            content.value = ''
         })
         .catch(err => console.log(err))
 }
 </script>
 
 <template>
-	<div>
-        <textarea v-model="content" placeholder="Hello.."></textarea>
+	<div class="flex mt-2 mb-8 space-x-4">
+        <textarea
+            v-model="content"
+            rows="8"
+            placeholder="Hello.."
+            class="w-full h-full p-2 border border-gray-300 rounded-lg focus:outline-none"
+            >
+        </textarea>
 
-        <button @click="sendMessage" :disabled="isLoading">Send</button>
+        <button
+            @click="sendMessage"
+            :disabled="isLoading"
+            class="w-64 h-16 px-4 py-2 text-gray-700 border border-gray-300 rounded-lg"
+            >
+                <template v-if="isLoading">
+                    Loading..
+                </template>
+                <template v-else>
+                    Send
+                </template>
+        </button>
     </div>
 </template>

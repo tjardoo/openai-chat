@@ -11,15 +11,16 @@ fetch(`http://localhost:3000/api/v1/chats`, { method: 'GET', headers: { 'Content
 </script>
 
 <template>
-	<div>
+	<div class="py-12 overflow-y-auto">
         <div
             v-for="chat in chats"
             :key="chat.id"
         >
             <button
                 @click="$emit('selectedChatChanged', chat.id)"
+                class="w-full px-8 py-2 text-left text-white hover:bg-gray-600"
             >
-                {{ chat.title }}
+                    {{ chat.title }}
             </button>
         </div>
     </div>
