@@ -4,7 +4,7 @@ CREATE TABLE messages
     chat_id INT UNSIGNED NOT NULL,
     role VARCHAR(255) NOT NULL,
     content TEXT NOT NULL,
-    created_at TIMESTAMP NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (chat_id) REFERENCES chats(id) ON DELETE CASCADE
 );
 

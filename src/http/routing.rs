@@ -8,25 +8,12 @@ use crate::state::AppState;
 
 use super::handlers;
 
-pub fn public() -> Router {
-    Router::new().route("/", get(handlers::web::home))
-}
-
-pub fn chat() -> Router<Arc<AppState>> {
-    Router::new().route("/:id", get(handlers::chat::show))
-}
-
 pub fn assets() -> Router {
     Router::new().nest_service(
         "/",
-        ServeDir::new(format!("{}/assets", env!("CARGO_MANIFEST_DIR"))),
+        ServeDir::new(format!("{}/client/dist", env!("CARGO_MANIFEST_DIR"))),
     )
 }
-
-pub fn internal() -> Router {
-    Router::new().route("/fetch-models", get(handlers::internal::fetch_models))
-}
-
 pub fn fallback() -> (StatusCode, &'static str) {
     (StatusCode::NOT_FOUND, "Not Found")
 }

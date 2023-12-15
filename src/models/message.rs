@@ -1,6 +1,8 @@
 use std::fmt::Display;
 
 use chrono::{DateTime, Utc};
+use openai_dive::v1::resources::chat::ChatMessage;
+use openai_dive::v1::resources::chat::Role as DiveRole;
 use serde::{Deserialize, Serialize};
 use sqlx::prelude::FromRow;
 
@@ -27,6 +29,27 @@ impl Display for Role {
         match self {
             Role::User => write!(f, "User"),
             Role::Assistant => write!(f, "Assistant"),
+        }
+    }
+}
+
+impl From<Message> for ChatMessage {
+    fn from(message: Message) -> Self {
+        ChatMessage {
+            role: message.role.into(),
+            content: Some(message.content),
+            tool_calls: None,
+            name: None,
+            tool_call_id: None,
+        }
+    }
+}
+
+impl From<Role> for DiveRole {
+    fn from(role: Role) -> Self {
+        match role {
+            Role::User => DiveRole::User,
+            Role::Assistant => DiveRole::Assistant,
         }
     }
 }

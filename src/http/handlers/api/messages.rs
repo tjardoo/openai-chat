@@ -50,16 +50,23 @@ pub async fn store(
     ValidatedJson(request): ValidatedJson<StoreMessageRequest>,
 ) -> Result<(StatusCode, Json<Message>), (StatusCode, Json<JsonError>)> {
     let last_inserted_id = sqlx::query_as!(
-        Todo,
+        Message,
         "INSERT INTO messages (chat_id, role, content) VALUES (?, ?, ?)",
         chat_id,
-        request.role,
+        "user".to_string(),
         request.content
     )
     .execute(&state.pool)
     .await
     .unwrap()
     .last_insert_id();
+
+    // @todo add to db
+    let chat_completion_response = crate::dive::send_message(&state.pool, chat_id)
+        .await
+        .unwrap();
+
+    println!("{:?}", chat_completion_response);
 
     match sqlx::query_as!(
         Message,

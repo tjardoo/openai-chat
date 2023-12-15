@@ -1,8 +1,8 @@
-use askama_axum::IntoResponse;
 use axum::{
     async_trait,
     extract::{rejection::JsonRejection, FromRequest, Request},
     http::StatusCode,
+    response::IntoResponse,
     Json,
 };
 use serde::Serialize;

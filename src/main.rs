@@ -1,16 +1,13 @@
-use axum::{
-    extract::Request,
-    http::{HeaderValue, Method},
-    Router, ServiceExt,
-};
+use axum::{extract::Request, http::Method, Router, ServiceExt};
 use colored::*;
 use dotenv::dotenv;
 use std::{env, sync::Arc};
 use tower::Layer;
-use tower_http::normalize_path::NormalizePathLayer;
+use tower_http::{cors::Any, normalize_path::NormalizePathLayer};
 use tracing::info;
 
 pub mod database;
+pub mod dive;
 pub mod http;
 pub mod logging;
 pub mod models;
@@ -36,11 +33,9 @@ async fn main() {
     let middleware_wrapper = NormalizePathLayer::trim_trailing_slash();
 
     let router: Router<_> = Router::new()
-        .nest_service("/", http::routing::public())
-        .nest_service("/internal", http::routing::internal())
+        .nest_service("/", http::routing::assets())
         .nest_service("/api", http::routing::api().with_state(app_state.clone()))
-        .nest_service("/chat", http::routing::chat().with_state(app_state.clone()))
-        .nest_service("/assets", http::routing::assets())
+        .fallback(http::routing::fallback())
         .layer(
             tower_http::cors::CorsLayer::new()
                 .allow_methods(vec![
@@ -48,11 +43,12 @@ async fn main() {
                     Method::POST,
                     Method::PATCH,
                     Method::DELETE,
+                    Method::HEAD,
+                    Method::OPTIONS,
                 ])
-                .allow_origin(app_url_port.parse::<HeaderValue>().unwrap())
-                .allow_headers([axum::http::header::CONTENT_TYPE]),
-        )
-        .fallback(http::routing::fallback());
+                .allow_origin(Any)
+                .allow_headers(Any),
+        );
 
     let app = middleware_wrapper.layer(router);
 

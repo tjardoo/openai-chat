@@ -1,7 +1,26 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { ref } from "vue";
+import ListChats from "./components/ListChats.vue";
+import ShowChat from "./components/ShowChat.vue";
+import StoreChat from "./components/StoreChat.vue";
+
+let selectedChat = ref<number|undefined>(undefined)
+
+const setSelectedChat = (id: number) => {
+    selectedChat.value = id
+}
+</script>
 
 <template>
+    test
+    <aside class="h-full">
+		<ListChats @selected-chat-changed="setSelectedChat" />
+    </aside>
 	<main>
-		<h1 className="text-3xl font-bold underline text-blue-500">Hello world!</h1>
+        <div v-if="selectedChat !== undefined">
+            <ShowChat :selected-chat="selectedChat" />
+
+            <StoreChat :selected-chat="selectedChat" />
+        </div>
 	</main>
 </template>
