@@ -74,7 +74,7 @@ watch(
 		>
 			<div class="flex flex-col">
 				<div
-					class="flex-none px-3 py-1 font-light rounded-full"
+					class="flex-none px-3 py-1 font-light rounded-lg"
 					:class="{
 						'text-left bg-gray-300 text-gray-700': message.role === 'assistant',
 						'text-right bg-blue-600 text-white': message.role === 'user'

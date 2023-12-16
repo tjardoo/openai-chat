@@ -23,6 +23,7 @@ pub async fn index(
             chat_id,
             role AS \"role: Role\",
             content,
+            used_model,
             created_at
         FROM
             messages
@@ -51,21 +52,23 @@ pub async fn store(
 ) -> Result<(StatusCode, Json<Message>), (StatusCode, Json<JsonError>)> {
     let last_inserted_id = sqlx::query_as!(
         Message,
-        "INSERT INTO messages (chat_id, role, content) VALUES (?, ?, ?)",
+        "INSERT INTO messages (chat_id, role, content, used_model) VALUES (?, ?, ?, ?)",
         chat_id,
         "user".to_string(),
-        request.content
+        request.content,
+        request.model
     )
     .execute(&state.pool)
     .await
     .unwrap()
     .last_insert_id();
 
-    // let chat_completion_response = crate::dive::send_message(&state.pool, chat_id)
-    //     .await
-    //     .unwrap();
+    let chat_completion_response =
+        crate::dive::send_message(&state.pool, chat_id, request.model, request.max_tokens)
+            .await
+            .unwrap();
 
-    // println!("{:?}", chat_completion_response);
+    println!("{:?}", chat_completion_response);
 
     match sqlx::query_as!(
         Message,
@@ -74,6 +77,7 @@ pub async fn store(
             chat_id,
             role AS \"role: Role\",
             content,
+            used_model,
             created_at
         FROM
             messages
@@ -106,6 +110,7 @@ pub async fn show(
             chat_id,
             role AS \"role: Role\",
             content,
+            used_model,
             created_at
         FROM
             messages

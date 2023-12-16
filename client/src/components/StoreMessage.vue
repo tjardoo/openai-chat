@@ -13,11 +13,18 @@ const props = defineProps({
 
 const isLoading = ref<boolean>(false)
 const content = ref<TextareaHTMLAttributes['value']>('')
+const model = ref<string>('gpt-4-0613')
+const maxTokens = ref<number>(64)
 
 const sendMessage = () => {
 	isLoading.value = true
 
-	fetch(`http://localhost:3000/api/v1/chats/${props.selectedChat}/messages`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': 'http://localhost:3000' }, body: JSON.stringify({ content: content.value }) })
+	fetch(`http://localhost:3000/api/v1/chats/${props.selectedChat}/messages`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': 'http://localhost:3000' }, body: JSON.stringify({
+            content: content.value,
+            model: model.value,
+            max_tokens: maxTokens.value,
+        })
+    })
 		.then((response) => response.json())
 		.then((data: Message) => {
 			isLoading.value = false
@@ -34,11 +41,37 @@ const emit = defineEmits(['messageSent'])
 
 <template>
 	<div class="flex mt-2 mb-8 space-x-4">
-		<textarea v-model="content" rows="8" placeholder="Hello.." class="w-full h-full p-2 border border-gray-300 rounded-lg focus:outline-none"> </textarea>
+		<textarea
+            v-model="content"
+            rows="8"
+            placeholder="Hello.."
+            class="w-full h-full p-2 border border-gray-300 rounded-lg focus:outline-none"
+        />
 
-		<button @click="sendMessage" :disabled="isLoading" class="w-64 h-16 px-4 py-2 text-gray-700 border border-gray-300 rounded-lg">
-			<template v-if="isLoading"> Loading.. </template>
-			<template v-else> Send </template>
-		</button>
+        <div class="space-y-2">
+            <button
+                @click="sendMessage"
+                :disabled="isLoading"
+                class="w-64 h-16 px-4 py-2 text-gray-700 border border-gray-300 rounded-lg"
+            >
+                <template v-if="isLoading"> Loading.. </template>
+                <template v-else> Send </template>
+            </button>
+
+            <select
+                class="w-64 px-4 py-2 text-gray-700 border border-gray-300 rounded-lg"
+                v-model="model"
+            >
+                <option value="gpt-4-32k-0613">gpt-4-32k-0613</option>
+                <option value="gpt-4-0613">gpt-4-0613</option>
+                <option value="gpt-3.5-turbo-1106">gpt-3.5-turbo-1106</option>
+            </select>
+
+            <input
+                type="number"
+                class="w-64 px-4 py-2 text-gray-700 border border-gray-300 rounded-lg"
+                v-model="maxTokens"
+            />
+        </div>
 	</div>
 </template>

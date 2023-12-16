@@ -13,6 +13,7 @@ pub struct Message {
     pub chat_id: u32,
     pub role: Role,
     pub content: String,
+    pub used_model: String,
     pub created_at: DateTime<Utc>,
 }
 

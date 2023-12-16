@@ -5,4 +5,6 @@ use validator::Validate;
 pub struct StoreMessageRequest {
     #[validate(length(min = 5, max = 50))]
     pub content: String,
+    pub model: String,
+    pub max_tokens: Option<u32>,
 }
