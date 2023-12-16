@@ -7,7 +7,6 @@ use axum::{
 };
 
 use crate::{
-    http::{requests::chats::StoreChatRequest, validation::ValidatedJson},
     models::chat::Chat,
     state::{AppState, JsonError},
 };
@@ -42,19 +41,12 @@ pub async fn index(
 
 pub async fn store(
     State(state): State<Arc<AppState>>,
-    ValidatedJson(request): ValidatedJson<StoreChatRequest>,
 ) -> Result<(StatusCode, Json<Chat>), (StatusCode, Json<JsonError>)> {
-    let last_inserted_id = sqlx::query_as!(
-        Todo,
-        "INSERT INTO chats (title, model_id, external_id) VALUES (?, ?, ?)",
-        request.title,
-        request.model_id,
-        request.external_id
-    )
-    .execute(&state.pool)
-    .await
-    .unwrap()
-    .last_insert_id();
+    let last_inserted_id = sqlx::query_as!(Chat, "INSERT INTO chats (created_at) VALUES (NOW())")
+        .execute(&state.pool)
+        .await
+        .unwrap()
+        .last_insert_id();
 
     match sqlx::query_as!(
         Chat,

@@ -5,8 +5,11 @@ use sqlx::prelude::FromRow;
 #[derive(Serialize, Deserialize, FromRow)]
 pub struct Chat {
     pub id: u32,
-    pub title: String,
-    pub model_id: u32,
-    pub external_id: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub title: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub model_id: Option<u32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub external_id: Option<String>,
     pub created_at: DateTime<Utc>,
 }
