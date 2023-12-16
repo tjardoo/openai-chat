@@ -11,7 +11,7 @@ let isFetchChats = ref<boolean>(false)
 let isFetchMessages = ref<boolean>(false)
 
 const setSelectedChat = (chat: Chat) => {
-    selectedChat.value = chat
+	selectedChat.value = chat
 }
 
 const createChat = () => {
@@ -42,22 +42,22 @@ const fetchMessages = () => {
 }
 
 const updateChatTitle = (title: string) => {
-    if (selectedChat.value === undefined) {
-        return
-    }
+	if (selectedChat.value === undefined) {
+		return
+	}
 
-    fetch(`http://localhost:3000/api/v1/chats/${selectedChat.value.id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': 'http://localhost:3000' },
-        body: JSON.stringify({ title: title })
-    })
-        .then((response) => response.json())
-        .then((data: Chat) => {
-            selectedChat.value = data
+	fetch(`http://localhost:3000/api/v1/chats/${selectedChat.value.id}`, {
+		method: 'PATCH',
+		headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': 'http://localhost:3000' },
+		body: JSON.stringify({ title: title })
+	})
+		.then((response) => response.json())
+		.then((data: Chat) => {
+			selectedChat.value = data
 
-            fetchChats()
-        })
-        .catch((err) => console.log(err))
+			fetchChats()
+		})
+		.catch((err) => console.log(err))
 }
 </script>
 
@@ -69,7 +69,7 @@ const updateChatTitle = (title: string) => {
 		<main class="w-full max-w-4xl mx-auto bg-gray-100">
 			<div v-if="selectedChat !== undefined" class="flex flex-col h-screen">
 				<div class="my-6">
-                    <ShowChatTitle :selected-chat="selectedChat" @update-chat-title="updateChatTitle" />
+					<ShowChatTitle :selected-chat="selectedChat" @update-chat-title="updateChatTitle" />
 				</div>
 
 				<div class="h-full px-3 overflow-y-auto">

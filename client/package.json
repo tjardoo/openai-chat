@@ -13,6 +13,8 @@
 		"format": "prettier --write --ignore-unknown ."
 	},
 	"dependencies": {
+		"he": "^1.2.0",
+		"highlight.js": "^11.9.0",
 		"vue": "^3.3.10"
 	},
 	"devDependencies": {

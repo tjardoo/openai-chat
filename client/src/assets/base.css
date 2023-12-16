@@ -1,3 +1,7 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+pre.code-wrapper {
+	@apply w-full p-3 my-3 text-left text-gray-800 bg-white border border-gray-300 rounded-lg;
+}

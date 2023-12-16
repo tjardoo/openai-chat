@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import type { Message, Chat } from '@/Models.vue'
 import { ref, watch } from 'vue'
+import hljs from 'highlight.js/lib/core'
+import { decode } from 'he'
 
 const props = defineProps({
 	selectedChat: {
@@ -57,6 +59,26 @@ watch(
 	},
 	{ immediate: true }
 )
+
+const hightlightCodeExamples = (message: string): string => {
+	const text = message.replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>')
+
+	const regex = /<pre><code(?: class="language-(\w+)")?>([\s\S]*?)<\/code><\/pre>/g
+
+	return text.replace(regex, (match, lang, code) => {
+		code = decode(code)
+
+		if (lang && hljs.getLanguage(lang)) {
+			return `<pre class="code-wrapper"><code class="language-${lang}">${hljs.highlight(code, { language: lang, ignoreIllegals: true }).value}</code></pre>`
+		} else {
+			const autoDetected = hljs.highlightAuto(code)
+
+			autoDetected.value = autoDetected.value.replace(/^.*\n/, '')
+
+			return `<pre class="code-wrapper"><code class="language-${autoDetected.language}">${autoDetected.value}</code></pre>`
+		}
+	})
+}
 </script>
 
 <template>
@@ -66,7 +88,7 @@ watch(
 		<div
 			v-for="message in messages"
 			:key="message.id"
-			class="flex my-1"
+			class="flex mt-1 mb-3"
 			:class="{
 				'justify-start': message.role === 'assistant',
 				'justify-end': message.role === 'user'
@@ -79,14 +101,13 @@ watch(
 						'text-left bg-gray-300 text-gray-700': message.role === 'assistant',
 						'text-right bg-blue-600 text-white': message.role === 'user'
 					}"
-				>
-					{{ message.content }}
-				</div>
+					v-html="hightlightCodeExamples(message.content)"
+				></div>
 				<div class="text-right">
 					<span class="text-[10px] text-gray-400">
-                        {{ message.created_at }}
-                        ({{ message.used_tokens }})
-                    </span>
+						{{ message.created_at }}
+						({{ message.used_tokens }})
+					</span>
 				</div>
 			</div>
 		</div>

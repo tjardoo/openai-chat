@@ -20,16 +20,16 @@ pub async fn send_message(
 
     let messages = get_messages_by_chat_id(&pool, chat_id).await?;
 
-    let mut messages: Vec<ChatMessage> = messages.into_iter().map(ChatMessage::from).collect();
+    let messages: Vec<ChatMessage> = messages.into_iter().map(ChatMessage::from).collect();
 
     // @todo
-    messages.push(ChatMessage {
-        role: Role::Assistant.into(),
-        content: Some("".to_string()),
-        tool_calls: None,
-        name: None,
-        tool_call_id: None,
-    });
+    // messages.push(ChatMessage {
+    //     role: Role::Assistant.into(),
+    //     content: Some("If you return any code example then wrap it between <pre><code> tags and ommit the ```.".to_string()),
+    //     tool_calls: None,
+    //     name: None,
+    //     tool_call_id: None,
+    // });
 
     let parameters = ChatCompletionParameters {
         model: model_name.clone(),
