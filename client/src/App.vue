@@ -3,21 +3,22 @@ import { ref } from 'vue'
 import ListChats from './components/ListChats.vue'
 import ListMessages from './components/ListMessages.vue'
 import StoreMessage from './components/StoreMessage.vue'
+import ShowChatTitle from './components/ShowChatTitle.vue'
 import type { Chat } from './Models.vue'
 
-let selectedChat = ref<number | undefined>(undefined)
+let selectedChat = ref<Chat | undefined>(undefined)
 let isFetchChats = ref<boolean>(false)
 let isFetchMessages = ref<boolean>(false)
 
-const setSelectedChat = (id: number) => {
-	selectedChat.value = id
+const setSelectedChat = (chat: Chat) => {
+    selectedChat.value = chat
 }
 
 const createChat = () => {
 	fetch(`http://localhost:3000/api/v1/chats`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': 'http://localhost:3000' } })
 		.then((response) => response.json())
 		.then((data: Chat) => {
-			selectedChat.value = data.id
+			selectedChat.value = data
 
 			fetchChats()
 		})
@@ -39,6 +40,25 @@ const fetchMessages = () => {
 		isFetchMessages.value = false
 	}, 1000)
 }
+
+const updateChatTitle = (title: string) => {
+    if (selectedChat.value === undefined) {
+        return
+    }
+
+    fetch(`http://localhost:3000/api/v1/chats/${selectedChat.value.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': 'http://localhost:3000' },
+        body: JSON.stringify({ title: title })
+    })
+        .then((response) => response.json())
+        .then((data: Chat) => {
+            selectedChat.value = data
+
+            fetchChats()
+        })
+        .catch((err) => console.log(err))
+}
 </script>
 
 <template>
@@ -49,7 +69,7 @@ const fetchMessages = () => {
 		<main class="w-full max-w-4xl mx-auto bg-gray-100">
 			<div v-if="selectedChat !== undefined" class="flex flex-col h-screen">
 				<div class="my-6">
-					<h1 class="text-xl font-bold text-center">Show chat {{ selectedChat ?? 'X' }}</h1>
+                    <ShowChatTitle :selected-chat="selectedChat" @update-chat-title="updateChatTitle" />
 				</div>
 
 				<div class="h-full px-3 overflow-y-auto">

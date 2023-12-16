@@ -34,7 +34,7 @@ defineEmits(['selectedChatChanged', 'createChat'])
 		<StoreChatButton @create-chat="$emit('createChat')" />
 
 		<div v-for="chat in chats" :key="chat.id">
-			<button @click="$emit('selectedChatChanged', chat.id)" class="w-full px-8 py-2 text-left text-white hover:bg-gray-600">
+			<button @click="$emit('selectedChatChanged', chat)" class="w-full px-8 py-2 text-left text-white hover:bg-gray-600">
 				{{ chat.title ?? 'Chat ' + chat.id }}
 			</button>
 		</div>

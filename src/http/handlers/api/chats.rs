@@ -7,6 +7,7 @@ use axum::{
 };
 
 use crate::{
+    http::{requests::chats::UpdateChatRequest, validation::ValidatedJson},
     models::chat::Chat,
     state::{AppState, JsonError},
 };
@@ -98,6 +99,49 @@ pub async fn show(
     .await
     {
         Ok(chat) => Ok((StatusCode::OK, Json(chat))),
+        Err(error) => Err((
+            StatusCode::NOT_FOUND,
+            Json(JsonError {
+                code: StatusCode::NOT_FOUND.as_u16(),
+                error: error.to_string(),
+            }),
+        )),
+    }
+}
+
+pub async fn update(
+    Path(id): Path<u32>,
+    State(state): State<Arc<AppState>>,
+    ValidatedJson(request): ValidatedJson<UpdateChatRequest>,
+) -> Result<(StatusCode, Json<Chat>), (StatusCode, Json<JsonError>)> {
+    sqlx::query_as!(
+        Chat,
+        "UPDATE chats SET title = ? WHERE id = ?",
+        request.title,
+        id
+    )
+    .execute(&state.pool)
+    .await
+    .unwrap();
+
+    match sqlx::query_as!(
+        Chat,
+        "SELECT
+            id,
+            title,
+            model_id,
+            external_id,
+            created_at
+        FROM
+            chats
+        WHERE
+            id = ?",
+        id
+    )
+    .fetch_one(&state.pool)
+    .await
+    {
+        Ok(todo) => Ok((StatusCode::CREATED, Json(todo))),
         Err(error) => Err((
             StatusCode::NOT_FOUND,
             Json(JsonError {

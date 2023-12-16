@@ -1,6 +1,9 @@
 use openai_dive::v1::{
     api::Client,
-    resources::chat::{ChatCompletionChoice, ChatCompletionParameters, ChatMessage},
+    resources::{
+        chat::{ChatCompletionChoice, ChatCompletionParameters, ChatMessage},
+        shared::Usage,
+    },
 };
 use sqlx::{MySql, Pool};
 use std::{env, error::Error};
@@ -12,14 +15,25 @@ pub async fn send_message(
     chat_id: u32,
     model_name: String,
     max_tokens: Option<u32>,
-) -> Result<(), Box<dyn Error>> {
+) -> Result<Usage, Box<dyn Error>> {
     let api_key = env::var("OPENAI_API_KEY").expect("$OPENAI_API_KEY is not set");
 
     let messages = get_messages_by_chat_id(&pool, chat_id).await?;
 
+    let mut messages: Vec<ChatMessage> = messages.into_iter().map(ChatMessage::from).collect();
+
+    // @todo
+    messages.push(ChatMessage {
+        role: Role::Assistant.into(),
+        content: Some("".to_string()),
+        tool_calls: None,
+        name: None,
+        tool_call_id: None,
+    });
+
     let parameters = ChatCompletionParameters {
         model: model_name.clone(),
-        messages: messages.into_iter().map(ChatMessage::from).collect(),
+        messages,
         max_tokens,
         ..Default::default()
     };
@@ -28,9 +42,16 @@ pub async fn send_message(
 
     let result = client.chat().create(parameters).await.unwrap();
 
-    add_completed_messages_to_chat(&pool, chat_id, result.choices, model_name, max_tokens).await?;
+    add_completed_messages_to_chat(
+        &pool,
+        chat_id,
+        result.choices,
+        model_name,
+        result.usage.completion_tokens,
+    )
+    .await?;
 
-    Ok(())
+    Ok(result.usage)
 }
 
 async fn get_messages_by_chat_id(
@@ -45,6 +66,7 @@ async fn get_messages_by_chat_id(
             role AS \"role: Role\",
             content,
             used_model,
+            used_tokens AS \"used_tokens: u32\",
             created_at
         FROM
             messages

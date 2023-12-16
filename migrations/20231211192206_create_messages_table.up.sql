@@ -10,10 +10,10 @@ CREATE TABLE messages
     FOREIGN KEY (chat_id) REFERENCES chats(id) ON DELETE CASCADE
 );
 
-INSERT INTO messages (chat_id, role, content, used_model, created_at) VALUES (1, 'user', 'test', 'This is the first message', NOW());
-INSERT INTO messages (chat_id, role, content, used_model, created_at) VALUES (1, 'assistant', 'test', 'This is the second message', NOW());
-INSERT INTO messages (chat_id, role, content, used_model, created_at) VALUES (1, 'user', 'test', 'This is the third message', NOW());
+INSERT INTO messages (chat_id, role, content, used_model) VALUES (1, 'user', 'This is the first message', 'test');
+INSERT INTO messages (chat_id, role, content, used_model) VALUES (1, 'assistant', 'This is the second message', 'test');
+INSERT INTO messages (chat_id, role, content, used_model) VALUES (1, 'user', 'This is the third message', 'test');
 
-INSERT INTO messages (chat_id, role, content, used_model, created_at) VALUES (2, 'user', 'test', 'This is the first message', NOW());
-INSERT INTO messages (chat_id, role, content, used_model, created_at) VALUES (2, 'assistant', 'test', 'This is the second message', NOW());
-INSERT INTO messages (chat_id, role, content, used_model, created_at) VALUES (2, 'user', 'test', 'This is the third message', NOW());
+INSERT INTO messages (chat_id, role, content, used_model) VALUES (2, 'user', 'This is the first message', 'test');
+INSERT INTO messages (chat_id, role, content, used_model) VALUES (2, 'assistant', 'This is the second message', 'test');
+INSERT INTO messages (chat_id, role, content, used_model) VALUES (2, 'user', 'This is the third message', 'test');

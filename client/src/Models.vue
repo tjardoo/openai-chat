@@ -11,6 +11,7 @@ export interface Message {
 	id: number
 	role: string
 	content: string
+    used_tokens: number
 	created_at: string
 }
 </script>

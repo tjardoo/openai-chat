@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import type { Message } from '@/Models.vue'
+import type { Message, Chat } from '@/Models.vue'
 import { ref, watch } from 'vue'
 
 const props = defineProps({
 	selectedChat: {
-		type: Number,
+		type: Object as () => Chat,
 		default: null,
 		required: true
 	},
@@ -21,7 +21,7 @@ const messages = ref<Array<Message>>([])
 const updateMessages = () => {
 	isLoading.value = true
 
-	fetch(`http://localhost:3000/api/v1/chats/${props.selectedChat}/messages`, { method: 'GET', headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': 'http://localhost:3000' } })
+	fetch(`http://localhost:3000/api/v1/chats/${props.selectedChat.id}/messages`, { method: 'GET', headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': 'http://localhost:3000' } })
 		.then((response) => response.json())
 		.then((data: Array<Message>) => {
 			messages.value = data
@@ -33,7 +33,7 @@ const updateMessages = () => {
 watch(
 	() => props.isFetching,
 	(first, second) => {
-		if (props.selectedChat == undefined) {
+		if (first == undefined) {
 			return
 		}
 
@@ -65,7 +65,7 @@ watch(
 
 		<div
 			v-for="message in messages"
-			:key="message.created_at"
+			:key="message.id"
 			class="flex my-1"
 			:class="{
 				'justify-start': message.role === 'assistant',
@@ -83,7 +83,10 @@ watch(
 					{{ message.content }}
 				</div>
 				<div class="text-right">
-					<span class="text-[10px] text-gray-400">{{ message.created_at }}</span>
+					<span class="text-[10px] text-gray-400">
+                        {{ message.created_at }}
+                        ({{ message.used_tokens }})
+                    </span>
 				</div>
 			</div>
 		</div>

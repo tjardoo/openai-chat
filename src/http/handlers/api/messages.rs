@@ -24,6 +24,7 @@ pub async fn index(
             role AS \"role: Role\",
             content,
             used_model,
+            used_tokens AS \"used_tokens: u32\",
             created_at
         FROM
             messages
@@ -63,12 +64,19 @@ pub async fn store(
     .unwrap()
     .last_insert_id();
 
-    let chat_completion_response =
-        crate::dive::send_message(&state.pool, chat_id, request.model, request.max_tokens)
-            .await
-            .unwrap();
+    let usage = crate::dive::send_message(&state.pool, chat_id, request.model, request.max_tokens)
+        .await
+        .unwrap();
 
-    println!("{:?}", chat_completion_response);
+    sqlx::query_as!(
+        Message,
+        "UPDATE messages SET used_tokens = ? WHERE id = ?",
+        usage.prompt_tokens,
+        last_inserted_id
+    )
+    .execute(&state.pool)
+    .await
+    .unwrap();
 
     match sqlx::query_as!(
         Message,
@@ -78,6 +86,7 @@ pub async fn store(
             role AS \"role: Role\",
             content,
             used_model,
+            used_tokens AS \"used_tokens: u32\",
             created_at
         FROM
             messages
@@ -111,6 +120,7 @@ pub async fn show(
             role AS \"role: Role\",
             content,
             used_model,
+            used_tokens AS \"used_tokens: u32\",
             created_at
         FROM
             messages
