@@ -20,8 +20,7 @@ pub async fn index(
         "SELECT
             id,
             title,
-            model_id,
-            external_id,
+            last_used_model,
             created_at
         FROM
             chats"
@@ -54,8 +53,7 @@ pub async fn store(
         "SELECT
             id,
             title,
-            model_id,
-            external_id,
+            last_used_model,
             created_at
         FROM
             chats
@@ -86,8 +84,7 @@ pub async fn show(
         "SELECT
             id,
             title,
-            model_id,
-            external_id,
+            last_used_model,
             created_at
         FROM
             chats
@@ -129,8 +126,7 @@ pub async fn update(
         "SELECT
             id,
             title,
-            model_id,
-            external_id,
+            last_used_model,
             created_at
         FROM
             chats

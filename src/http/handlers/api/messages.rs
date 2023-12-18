@@ -52,20 +52,22 @@ pub async fn store(
     State(state): State<Arc<AppState>>,
     ValidatedJson(request): ValidatedJson<StoreMessageRequest>,
 ) -> Result<(StatusCode, Json<Message>), (StatusCode, Json<JsonError>)> {
+    let model = request.model;
+
     let last_inserted_id = sqlx::query_as!(
         Message,
         "INSERT INTO messages (chat_id, role, content, used_model) VALUES (?, ?, ?, ?)",
         chat_id,
         "user".to_string(),
         request.content,
-        request.model
+        model
     )
     .execute(&state.pool)
     .await
     .unwrap()
     .last_insert_id();
 
-    let usage = crate::dive::send_message(&state.pool, chat_id, request.model, request.max_tokens)
+    let usage = crate::dive::send_message(&state.pool, chat_id, &model, request.max_tokens)
         .await
         .unwrap();
 
@@ -74,6 +76,16 @@ pub async fn store(
         "UPDATE messages SET prompt_tokens = ? WHERE id = ?",
         usage.prompt_tokens,
         last_inserted_id
+    )
+    .execute(&state.pool)
+    .await
+    .unwrap();
+
+    sqlx::query_as!(
+        Chat,
+        "UPDATE chats SET last_used_model = ? WHERE id = ?",
+        model,
+        chat_id
     )
     .execute(&state.pool)
     .await

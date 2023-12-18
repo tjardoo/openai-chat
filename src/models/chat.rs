@@ -8,8 +8,6 @@ pub struct Chat {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub title: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub model_id: Option<u32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub external_id: Option<String>,
+    pub last_used_model: Option<String>,
     pub created_at: DateTime<Utc>,
 }

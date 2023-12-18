@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import type { Message, Chat } from '@/Models.vue'
 import type { TextareaHTMLAttributes } from 'vue'
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
+import PaperAirplaneIcon from './Icons/PaperAirplaneIcon.vue'
 
 const props = defineProps({
 	selectedChat: {
@@ -18,7 +19,7 @@ const props = defineProps({
 
 const isLoading = ref<boolean>(false)
 const content = ref<TextareaHTMLAttributes['value']>('')
-const model = ref<string|undefined>(undefined)
+const model = ref<string|null>(null)
 const maxTokens = ref<number | undefined>(undefined)
 
 const sendMessage = () => {
@@ -44,6 +45,18 @@ const sendMessage = () => {
 		.catch((err) => console.log(err))
 }
 
+watch(
+	() => props.selectedChat,
+	(first, second) => {
+		if (first === undefined) {
+			return
+		}
+
+        model.value = first.last_used_model
+	},
+	{ immediate: true }
+)
+
 const isSendButtonDisabled = computed(() => {
     return content.value === '' || isLoading.value === true || model.value === undefined
 })
@@ -56,9 +69,11 @@ const emit = defineEmits(['messageSent'])
 		<textarea v-model="content" rows="8" placeholder="Hello.." class="w-full h-full p-2 border border-gray-300 rounded-lg focus:outline-none" />
 
 		<div class="space-y-1">
-			<button @click="sendMessage" :disabled="isSendButtonDisabled" class="w-64 h-16 px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg disabled:cursor-not-allowed disabled:opacity-50">
-				<template v-if="isLoading"> Loading.. </template>
-				<template v-else> Send </template>
+			<button @click="sendMessage" :disabled="isSendButtonDisabled" class="flex items-center justify-end w-64 h-16 px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg disabled:cursor-not-allowed disabled:opacity-50">
+				<template v-if="isLoading">Loading..</template>
+				<template v-else>
+                    Send <PaperAirplaneIcon class="ml-3" />
+                </template>
 			</button>
 
 			<div>

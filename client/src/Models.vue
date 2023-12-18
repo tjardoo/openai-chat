@@ -3,7 +3,6 @@ export interface Chat {
 	id: number
 	model_id: number | null
 	title: string | null
-	external_id: string | null
 	created_at: string
     last_used_model: string | null
 }

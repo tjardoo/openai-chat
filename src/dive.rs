@@ -13,7 +13,7 @@ use crate::models::message::{Message, Role};
 pub async fn send_message(
     pool: &Pool<MySql>,
     chat_id: u32,
-    model_name: String,
+    model_name: &str,
     max_tokens: Option<u32>,
 ) -> Result<Usage, Box<dyn Error>> {
     let api_key = env::var("OPENAI_API_KEY").expect("$OPENAI_API_KEY is not set");
@@ -23,7 +23,7 @@ pub async fn send_message(
     let messages: Vec<ChatMessage> = messages.into_iter().map(ChatMessage::from).collect();
 
     let parameters = ChatCompletionParameters {
-        model: model_name.clone(),
+        model: model_name.to_string(),
         messages,
         max_tokens,
         ..Default::default()
@@ -76,7 +76,7 @@ async fn add_completed_messages_to_chat(
     pool: &Pool<MySql>,
     chat_id: u32,
     messages: Vec<ChatCompletionChoice>,
-    used_model: String,
+    used_model: &str,
     max_tokens: Option<u32>,
 ) -> Result<(), Box<dyn Error>> {
     for message in messages {
