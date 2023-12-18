@@ -7,12 +7,23 @@ import ShowChatTitle from './components/ShowChatTitle.vue'
 import type { Chat } from './Models.vue'
 
 let selectedChat = ref<Chat | undefined>(undefined)
+let models = ref<Array<String> | undefined>(undefined)
 let isFetchChats = ref<boolean>(false)
 let isFetchMessages = ref<boolean>(false)
 
 const setSelectedChat = (chat: Chat) => {
 	selectedChat.value = chat
 }
+
+fetch(`http://localhost:3000/api/v1/models`, {
+		method: 'GET',
+		headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': 'http://localhost:3000' },
+	})
+		.then((response) => response.json())
+		.then((data: Array<String>) => {
+			models.value = data
+		})
+		.catch((err) => console.log(err))
 
 const createChat = () => {
 	fetch(`http://localhost:3000/api/v1/chats`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': 'http://localhost:3000' } })
@@ -62,11 +73,11 @@ const updateChatTitle = (title: string) => {
 </script>
 
 <template>
-	<div class="flex">
+	<div class="flex bg-gray-50">
 		<div class="h-screen bg-gray-800 w-96">
 			<ListChats :is-fetching="isFetchChats" @selected-chat-changed="setSelectedChat" @create-chat="createChat" />
 		</div>
-		<main class="w-full max-w-4xl mx-auto bg-gray-100">
+		<main class="w-full max-w-4xl mx-auto">
 			<div v-if="selectedChat !== undefined" class="flex flex-col h-screen">
 				<div class="my-6">
 					<ShowChatTitle :selected-chat="selectedChat" @update-chat-title="updateChatTitle" />
@@ -77,7 +88,7 @@ const updateChatTitle = (title: string) => {
 				</div>
 
 				<div class="h-auto">
-					<StoreMessage :selected-chat="selectedChat" @message-sent="fetchMessages" />
+					<StoreMessage :selected-chat="selectedChat" :models="models" @message-sent="fetchMessages" />
 				</div>
 			</div>
 		</main>

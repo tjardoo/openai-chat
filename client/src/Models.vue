@@ -5,13 +5,15 @@ export interface Chat {
 	title: string | null
 	external_id: string | null
 	created_at: string
+    last_used_model: string | null
 }
 
 export interface Message {
 	id: number
 	role: string
 	content: string
-	used_tokens: number
+	prompt_tokens: number | null
+    completion_tokens: number | null
 	created_at: string
 }
 </script>

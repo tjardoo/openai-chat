@@ -1,19 +1,24 @@
 <script setup lang="ts">
 import type { Message, Chat } from '@/Models.vue'
 import type { TextareaHTMLAttributes } from 'vue'
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 
 const props = defineProps({
 	selectedChat: {
 		type: Object as () => Chat,
 		default: null,
-		required: true
-	}
+		required: true,
+	},
+    models: {
+        type: Array as () => Array<String>,
+        default: [],
+        required: true,
+    }
 })
 
 const isLoading = ref<boolean>(false)
 const content = ref<TextareaHTMLAttributes['value']>('')
-const model = ref<string>('gpt-4-0613')
+const model = ref<string|undefined>(undefined)
 const maxTokens = ref<number | undefined>(undefined)
 
 const sendMessage = () => {
@@ -39,6 +44,10 @@ const sendMessage = () => {
 		.catch((err) => console.log(err))
 }
 
+const isSendButtonDisabled = computed(() => {
+    return content.value === '' || isLoading.value === true || model.value === undefined
+})
+
 const emit = defineEmits(['messageSent'])
 </script>
 
@@ -47,7 +56,7 @@ const emit = defineEmits(['messageSent'])
 		<textarea v-model="content" rows="8" placeholder="Hello.." class="w-full h-full p-2 border border-gray-300 rounded-lg focus:outline-none" />
 
 		<div class="space-y-1">
-			<button @click="sendMessage" :disabled="isLoading || content === ''" class="w-64 h-16 px-4 py-2 text-gray-700 border border-gray-300 rounded-lg disabled:cursor-not-allowed disabled:opacity-50">
+			<button @click="sendMessage" :disabled="isSendButtonDisabled" class="w-64 h-16 px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg disabled:cursor-not-allowed disabled:opacity-50">
 				<template v-if="isLoading"> Loading.. </template>
 				<template v-else> Send </template>
 			</button>
@@ -55,9 +64,9 @@ const emit = defineEmits(['messageSent'])
 			<div>
 				<label for="model" class="text-gray-500 text-[10px]">OpenAI model</label>
 				<select class="w-64 px-4 py-2 text-gray-700 border border-gray-300 rounded-lg" id="model" v-model="model">
-					<option value="gpt-4-32k-0613">gpt-4-32k-0613</option>
-					<option value="gpt-4-0613">gpt-4-0613</option>
-					<option value="gpt-3.5-turbo-1106">gpt-3.5-turbo-1106</option>
+                    <template v-for="model in models" :key="model">
+                        <option :value="model">{{ model }}</option>
+                    </template>
 				</select>
 			</div>
 

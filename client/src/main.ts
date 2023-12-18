@@ -2,6 +2,7 @@ import './assets/base.css'
 import 'highlight.js/styles/github.css'
 
 import hljs from 'highlight.js/lib/core'
+import he from 'he'
 
 import javascript from 'highlight.js/lib/languages/javascript'
 import php from 'highlight.js/lib/languages/php'

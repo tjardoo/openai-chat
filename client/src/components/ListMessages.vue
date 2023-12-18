@@ -106,7 +106,7 @@ const hightlightCodeExamples = (message: string): string => {
 				<div class="text-right">
 					<span class="text-[10px] text-gray-400">
 						{{ message.created_at }}
-						({{ message.used_tokens }})
+						({{ message.prompt_tokens || message.completion_tokens }})
 					</span>
 				</div>
 			</div>
