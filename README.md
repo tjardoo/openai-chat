@@ -1,5 +1,7 @@
 # OpenAI Chat
 
+![Screenshot](docs/screenshot.png)
+
 ## Installation
 
 ### Prerequisites
