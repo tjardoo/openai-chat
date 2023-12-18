@@ -1,35 +1,22 @@
-use std::sync::Arc;
+use axum::{http::StatusCode, Json};
+use openai_dive::v1::models::{Gpt35Engine, Gpt4Engine};
 
-use axum::{extract::State, http::StatusCode, Json};
+use crate::state::JsonError;
 
-use crate::{
-    models::model::Model,
-    state::{AppState, JsonError},
-};
+pub async fn index() -> Result<(StatusCode, Json<Vec<String>>), (StatusCode, Json<JsonError>)> {
+    let mut models = Vec::<String>::new();
 
-pub async fn index(
-    State(state): State<Arc<AppState>>,
-) -> Result<(StatusCode, Json<Vec<Model>>), (StatusCode, Json<JsonError>)> {
-    match sqlx::query_as!(
-        Model,
-        "SELECT
-            id,
-            name,
-            owned_by,
-            created_at
-        FROM
-            models"
-    )
-    .fetch_all(&state.pool)
-    .await
-    {
-        Ok(models) => Ok((StatusCode::OK, Json(models))),
-        Err(error) => Err((
-            StatusCode::NOT_FOUND,
-            Json(JsonError {
-                code: StatusCode::NOT_FOUND.as_u16(),
-                error: error.to_string(),
-            }),
-        )),
-    }
+    models.push(Gpt4Engine::Gpt41106Preview.to_string());
+    models.push(Gpt4Engine::Gpt4VisionPreview.to_string());
+    models.push(Gpt4Engine::Gpt4.to_string());
+    models.push(Gpt4Engine::Gpt432K.to_string());
+    models.push(Gpt4Engine::Gpt40613.to_string());
+    models.push(Gpt4Engine::Gpt432K0613.to_string());
+
+    models.push(Gpt35Engine::Gpt35Turbo1106.to_string());
+    models.push(Gpt35Engine::Gpt35Turbo.to_string());
+    models.push(Gpt35Engine::Gpt35Turbo16K.to_string());
+    models.push(Gpt35Engine::Gpt35TurboInstruct.to_string());
+
+    Ok((StatusCode::OK, Json(models)))
 }

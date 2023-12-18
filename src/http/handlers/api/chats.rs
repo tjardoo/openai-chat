@@ -66,7 +66,7 @@ pub async fn store(
     .fetch_one(&state.pool)
     .await
     {
-        Ok(todo) => Ok((StatusCode::CREATED, Json(todo))),
+        Ok(chat) => Ok((StatusCode::CREATED, Json(chat))),
         Err(error) => Err((
             StatusCode::NOT_FOUND,
             Json(JsonError {
@@ -141,7 +141,7 @@ pub async fn update(
     .fetch_one(&state.pool)
     .await
     {
-        Ok(todo) => Ok((StatusCode::CREATED, Json(todo))),
+        Ok(message) => Ok((StatusCode::CREATED, Json(message))),
         Err(error) => Err((
             StatusCode::NOT_FOUND,
             Json(JsonError {

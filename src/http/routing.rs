@@ -1,5 +1,5 @@
 use axum::http::StatusCode;
-use axum::routing::{delete, get, patch, post};
+use axum::routing::{get, patch, post};
 use axum::Router;
 use std::sync::Arc;
 use tower_http::services::ServeDir;
@@ -19,13 +19,6 @@ pub fn fallback() -> (StatusCode, &'static str) {
 }
 
 pub fn api() -> Router<Arc<AppState>> {
-    let todos_router = Router::new()
-        .route("/", get(handlers::api::todos::index))
-        .route("/", post(handlers::api::todos::store))
-        .route("/:id", get(handlers::api::todos::show))
-        .route("/:id", patch(handlers::api::todos::update))
-        .route("/:id", delete(handlers::api::todos::destroy));
-
     let models_router = Router::new().route("/", get(handlers::api::models::index));
 
     let chats_router = Router::new()
@@ -41,12 +34,9 @@ pub fn api() -> Router<Arc<AppState>> {
 
     Router::new().nest(
         "/v1",
-        Router::new()
-            .nest("/todos", todos_router)
-            .nest("/models", models_router)
-            .nest(
-                "/chats",
-                chats_router.nest("/:id/messages", messages_router),
-            ),
+        Router::new().nest("/models", models_router).nest(
+            "/chats",
+            chats_router.nest("/:id/messages", messages_router),
+        ),
     )
 }

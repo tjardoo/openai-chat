@@ -14,7 +14,8 @@ pub struct Message {
     pub role: Role,
     pub content: String,
     pub used_model: String,
-    pub used_tokens: u32,
+    pub prompt_tokens: Option<u32>,
+    pub completion_tokens: Option<u32>,
     pub created_at: DateTime<Utc>,
 }
 

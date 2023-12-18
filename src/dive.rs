@@ -22,15 +22,6 @@ pub async fn send_message(
 
     let messages: Vec<ChatMessage> = messages.into_iter().map(ChatMessage::from).collect();
 
-    // @todo
-    // messages.push(ChatMessage {
-    //     role: Role::Assistant.into(),
-    //     content: Some("If you return any code example then wrap it between <pre><code> tags and ommit the ```.".to_string()),
-    //     tool_calls: None,
-    //     name: None,
-    //     tool_call_id: None,
-    // });
-
     let parameters = ChatCompletionParameters {
         model: model_name.clone(),
         messages,
@@ -66,7 +57,8 @@ async fn get_messages_by_chat_id(
             role AS \"role: Role\",
             content,
             used_model,
-            used_tokens AS \"used_tokens: u32\",
+            prompt_tokens AS \"prompt_tokens: u32\",
+            completion_tokens AS \"completion_tokens: u32\",
             created_at
         FROM
             messages
@@ -99,16 +91,16 @@ async fn add_message_to_chat(
     chat_id: u32,
     message: ChatCompletionChoice,
     used_model: &str,
-    max_tokens: &Option<u32>,
+    completion_tokens: &Option<u32>,
 ) -> Result<(), Box<dyn Error>> {
     sqlx::query_as!(
         Message,
-        "INSERT INTO messages (chat_id, role, content, used_model, used_tokens) VALUES (?, ?, ?, ?, ?)",
+        "INSERT INTO messages (chat_id, role, content, used_model, completion_tokens) VALUES (?, ?, ?, ?, ?)",
         chat_id,
         "assistant".to_string(),
         message.message.content,
         used_model,
-        max_tokens.unwrap_or(0)
+        completion_tokens
     )
     .execute(pool)
     .await?;

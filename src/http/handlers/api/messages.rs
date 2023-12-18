@@ -24,7 +24,8 @@ pub async fn index(
             role AS \"role: Role\",
             content,
             used_model,
-            used_tokens AS \"used_tokens: u32\",
+            prompt_tokens AS \"prompt_tokens: u32\",
+            completion_tokens AS \"completion_tokens: u32\",
             created_at
         FROM
             messages
@@ -70,7 +71,7 @@ pub async fn store(
 
     sqlx::query_as!(
         Message,
-        "UPDATE messages SET used_tokens = ? WHERE id = ?",
+        "UPDATE messages SET prompt_tokens = ? WHERE id = ?",
         usage.prompt_tokens,
         last_inserted_id
     )
@@ -86,7 +87,8 @@ pub async fn store(
             role AS \"role: Role\",
             content,
             used_model,
-            used_tokens AS \"used_tokens: u32\",
+            prompt_tokens AS \"prompt_tokens: u32\",
+            completion_tokens AS \"completion_tokens: u32\",
             created_at
         FROM
             messages
@@ -97,7 +99,7 @@ pub async fn store(
     .fetch_one(&state.pool)
     .await
     {
-        Ok(todo) => Ok((StatusCode::CREATED, Json(todo))),
+        Ok(message) => Ok((StatusCode::CREATED, Json(message))),
         Err(error) => Err((
             StatusCode::NOT_FOUND,
             Json(JsonError {
@@ -120,7 +122,8 @@ pub async fn show(
             role AS \"role: Role\",
             content,
             used_model,
-            used_tokens AS \"used_tokens: u32\",
+            prompt_tokens AS \"prompt_tokens: u32\",
+            completion_tokens AS \"completion_tokens: u32\",
             created_at
         FROM
             messages
