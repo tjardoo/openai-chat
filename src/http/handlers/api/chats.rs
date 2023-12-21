@@ -1,10 +1,9 @@
-use std::sync::Arc;
-
 use axum::{
     extract::{Path, State},
     http::StatusCode,
     Json,
 };
+use std::sync::Arc;
 
 use crate::{
     http::{requests::chats::UpdateChatRequest, validation::ValidatedJson},

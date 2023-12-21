@@ -4,7 +4,7 @@ export interface Chat {
 	model_id: number | null
 	title: string | null
 	created_at: string
-    last_used_model: string | null
+	last_used_model: string | null
 }
 
 export interface Message {
@@ -12,7 +12,7 @@ export interface Message {
 	role: string
 	content: string
 	prompt_tokens: number | null
-    completion_tokens: number | null
+	completion_tokens: number | null
 	created_at: string
 }
 </script>

@@ -16,14 +16,14 @@ const setSelectedChat = (chat: Chat) => {
 }
 
 fetch(`http://localhost:3000/api/v1/models`, {
-		method: 'GET',
-		headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': 'http://localhost:3000' },
+	method: 'GET',
+	headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': 'http://localhost:3000' }
+})
+	.then((response) => response.json())
+	.then((data: Array<String>) => {
+		models.value = data
 	})
-		.then((response) => response.json())
-		.then((data: Array<String>) => {
-			models.value = data
-		})
-		.catch((err) => console.log(err))
+	.catch((err) => console.log(err))
 
 const createChat = () => {
 	fetch(`http://localhost:3000/api/v1/chats`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': 'http://localhost:3000' } })

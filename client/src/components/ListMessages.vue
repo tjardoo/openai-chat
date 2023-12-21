@@ -3,7 +3,6 @@ import type { Message, Chat } from '@/Models.vue'
 import { ref, watch } from 'vue'
 import hljs from 'highlight.js/lib/core'
 import { decode } from 'he'
-import InfoIcon from './Icons/InfoIcon.vue'
 
 const props = defineProps({
 	selectedChat: {
@@ -107,9 +106,7 @@ const hightlightCodeExamples = (message: string): string => {
 				<div class="text-right">
 					<div class="text-[10px] text-gray-400 mt-1">
 						{{ message.created_at }}
-                        <span>
-                            ({{ message.prompt_tokens || message.completion_tokens || 0 }})
-                        </span>
+						<span> ({{ message.prompt_tokens || message.completion_tokens || 0 }}) </span>
 					</div>
 				</div>
 			</div>

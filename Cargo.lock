@@ -1211,9 +1211,9 @@ dependencies = [
 
 [[package]]
 name = "openai_dive"
-version = "0.3.4"
+version = "0.3.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0f27c58bef7522daf6e432a0d35c49a39d95683137c32e0a966bac66ec2ad99c"
+checksum = "401b56623bb814484be93957f7657dfd66820081402dabf21d216881e7bda94a"
 dependencies = [
  "bytes",
  "reqwest",
@@ -2124,9 +2124,9 @@ checksum = "1f3ccbac311fea05f86f61904b462b55fb3df8837a366dfc601a0161d0532f20"
 
 [[package]]
 name = "tokio"
-version = "1.34.0"
+version = "1.35.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d0c014766411e834f7af5b8f4cf46257aab4036ca95e9d2c144a10f59ad6f5b9"
+checksum = "c89b4efa943be685f629b149f53829423f8f5531ea21249408e8e2f8671ec104"
 dependencies = [
  "backtrace",
  "bytes",

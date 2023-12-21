@@ -8,18 +8,18 @@ const props = defineProps({
 	selectedChat: {
 		type: Object as () => Chat,
 		default: null,
-		required: true,
+		required: true
 	},
-    models: {
-        type: Array as () => Array<String>,
-        default: [],
-        required: true,
-    }
+	models: {
+		type: Array as () => Array<String>,
+		default: [],
+		required: true
+	}
 })
 
 const isLoading = ref<boolean>(false)
 const content = ref<TextareaHTMLAttributes['value']>('')
-const model = ref<string|null>(null)
+const model = ref<string | null>(null)
 const maxTokens = ref<number | undefined>(undefined)
 
 const sendMessage = () => {
@@ -52,13 +52,13 @@ watch(
 			return
 		}
 
-        model.value = first.last_used_model
+		model.value = first.last_used_model
 	},
 	{ immediate: true }
 )
 
 const isSendButtonDisabled = computed(() => {
-    return content.value === '' || isLoading.value === true || model.value === undefined
+	return content.value === '' || isLoading.value === true || model.value === undefined
 })
 
 const emit = defineEmits(['messageSent'])
@@ -71,17 +71,15 @@ const emit = defineEmits(['messageSent'])
 		<div class="space-y-1">
 			<button @click="sendMessage" :disabled="isSendButtonDisabled" class="flex items-center justify-end w-64 h-16 px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg disabled:cursor-not-allowed disabled:opacity-50">
 				<template v-if="isLoading">Loading..</template>
-				<template v-else>
-                    Send <PaperAirplaneIcon class="ml-3" />
-                </template>
+				<template v-else> Send <PaperAirplaneIcon class="ml-3" /> </template>
 			</button>
 
 			<div>
 				<label for="model" class="text-gray-500 text-[10px]">OpenAI model</label>
 				<select class="w-64 px-4 py-2 text-gray-700 border border-gray-300 rounded-lg" id="model" v-model="model">
-                    <template v-for="model in models" :key="model">
-                        <option :value="model">{{ model }}</option>
-                    </template>
+					<template v-for="model in models" :key="model">
+						<option :value="model">{{ model }}</option>
+					</template>
 				</select>
 			</div>
 
