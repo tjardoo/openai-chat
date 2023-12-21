@@ -79,6 +79,12 @@ const hightlightCodeExamples = (message: string): string => {
 		}
 	})
 }
+
+const formatDateTime = (dateTime: string): string => {
+	const date = new Date(dateTime)
+
+	return `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`
+}
 </script>
 
 <template>
@@ -105,8 +111,13 @@ const hightlightCodeExamples = (message: string): string => {
 				></div>
 				<div class="text-right">
 					<div class="text-[10px] text-gray-400 mt-1">
-						{{ message.created_at }}
-						<span> ({{ message.prompt_tokens || message.completion_tokens || 0 }}) </span>
+						<span>{{ formatDateTime(message.created_at) }}</span>
+						&bull;
+						<span>{{ message.prompt_tokens || message.completion_tokens || 0 }}</span>
+						<template v-if="message.temperature">
+							&bull;
+							<span>{{ message.temperature }}</span>
+						</template>
 					</div>
 				</div>
 			</div>

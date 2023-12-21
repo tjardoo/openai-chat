@@ -15,6 +15,7 @@ pub async fn send_message(
     chat_id: u32,
     model_name: &str,
     max_tokens: Option<u32>,
+    temperature: Option<f32>,
 ) -> Result<Usage, Box<dyn Error>> {
     let api_key = env::var("OPENAI_API_KEY").expect("$OPENAI_API_KEY is not set");
 
@@ -26,6 +27,7 @@ pub async fn send_message(
         model: model_name.to_string(),
         messages,
         max_tokens,
+        temperature,
         ..Default::default()
     };
 
@@ -39,6 +41,7 @@ pub async fn send_message(
         result.choices,
         model_name,
         result.usage.completion_tokens,
+        temperature,
     )
     .await?;
 
@@ -59,6 +62,7 @@ async fn get_messages_by_chat_id(
             used_model,
             prompt_tokens AS \"prompt_tokens: u32\",
             completion_tokens AS \"completion_tokens: u32\",
+            temperature AS \"temperature: f32\",
             created_at
         FROM
             messages
@@ -78,9 +82,18 @@ async fn add_completed_messages_to_chat(
     messages: Vec<ChatCompletionChoice>,
     used_model: &str,
     max_tokens: Option<u32>,
+    temperature: Option<f32>,
 ) -> Result<(), Box<dyn Error>> {
     for message in messages {
-        add_message_to_chat(pool, chat_id, message, &used_model, &max_tokens).await?;
+        add_message_to_chat(
+            pool,
+            chat_id,
+            message,
+            &used_model,
+            &max_tokens,
+            &temperature,
+        )
+        .await?;
     }
 
     Ok(())
@@ -92,15 +105,17 @@ async fn add_message_to_chat(
     message: ChatCompletionChoice,
     used_model: &str,
     completion_tokens: &Option<u32>,
+    temperature: &Option<f32>,
 ) -> Result<(), Box<dyn Error>> {
     sqlx::query_as!(
         Message,
-        "INSERT INTO messages (chat_id, role, content, used_model, completion_tokens) VALUES (?, ?, ?, ?, ?)",
+        "INSERT INTO messages (chat_id, role, content, used_model, completion_tokens, temperature) VALUES (?, ?, ?, ?, ?, ?)",
         chat_id,
         "assistant".to_string(),
         message.message.content,
         used_model,
-        completion_tokens
+        completion_tokens,
+        temperature
     )
     .execute(pool)
     .await?;

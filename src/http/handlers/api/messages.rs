@@ -1,10 +1,9 @@
-use std::sync::Arc;
-
 use axum::{
     extract::{Path, State},
     http::StatusCode,
     Json,
 };
+use std::sync::Arc;
 
 use crate::{
     http::{requests::messages::StoreMessageRequest, validation::ValidatedJson},
@@ -26,6 +25,7 @@ pub async fn index(
             used_model,
             prompt_tokens AS \"prompt_tokens: u32\",
             completion_tokens AS \"completion_tokens: u32\",
+            temperature AS \"temperature: f32\",
             created_at
         FROM
             messages
@@ -67,9 +67,15 @@ pub async fn store(
     .unwrap()
     .last_insert_id();
 
-    let usage = crate::dive::send_message(&state.pool, chat_id, &model, request.max_tokens)
-        .await
-        .unwrap();
+    let usage = crate::dive::send_message(
+        &state.pool,
+        chat_id,
+        &model,
+        request.max_tokens,
+        request.temperature,
+    )
+    .await
+    .unwrap();
 
     sqlx::query_as!(
         Message,
@@ -101,6 +107,7 @@ pub async fn store(
             used_model,
             prompt_tokens AS \"prompt_tokens: u32\",
             completion_tokens AS \"completion_tokens: u32\",
+            temperature AS \"temperature: f32\",
             created_at
         FROM
             messages
@@ -136,6 +143,7 @@ pub async fn show(
             used_model,
             prompt_tokens AS \"prompt_tokens: u32\",
             completion_tokens AS \"completion_tokens: u32\",
+            temperature AS \"temperature: f32\",
             created_at
         FROM
             messages

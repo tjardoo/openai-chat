@@ -16,7 +16,6 @@ pub async fn index() -> Result<(StatusCode, Json<Vec<String>>), (StatusCode, Jso
     models.push(Gpt35Engine::Gpt35Turbo1106.to_string());
     models.push(Gpt35Engine::Gpt35Turbo.to_string());
     models.push(Gpt35Engine::Gpt35Turbo16K.to_string());
-    models.push(Gpt35Engine::Gpt35TurboInstruct.to_string());
 
     Ok((StatusCode::OK, Json(models)))
 }

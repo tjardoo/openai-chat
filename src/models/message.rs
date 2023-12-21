@@ -1,12 +1,12 @@
-use std::fmt::Display;
-
 use chrono::{DateTime, Utc};
 use openai_dive::v1::resources::chat::ChatMessage;
 use openai_dive::v1::resources::chat::Role as DiveRole;
 use serde::{Deserialize, Serialize};
 use sqlx::prelude::FromRow;
+use std::fmt::Display;
+use validator::Validate;
 
-#[derive(Serialize, Deserialize, FromRow)]
+#[derive(Serialize, Deserialize, FromRow, Validate)]
 pub struct Message {
     pub id: u32,
     #[serde(skip_serializing)]
@@ -16,6 +16,8 @@ pub struct Message {
     pub used_model: String,
     pub prompt_tokens: Option<u32>,
     pub completion_tokens: Option<u32>,
+    #[validate(range(min = 0.0, max = 2.0))]
+    pub temperature: Option<f32>,
     pub created_at: DateTime<Utc>,
 }
 

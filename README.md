@@ -8,6 +8,8 @@ OpenAI Chat is a web application hat allows you to interact with the [OpenAI API
 
 You can easily start a new chat or continue an existing chat via the sidebar. You can choose the engine (model) and the temperature for each chat individually. When a code snippet is detected, it will automatically be highlighted using [Highlight.js](https://highlightjs.org/).
 
+With each new message you send, the tokens used are increasing. This is visible on the right-hand side of the timestamp of each message that you send. Each new message will contain all previous messages of this chat and therefore the tokens used will increase.
+
 ## Installation
 
 ### Prerequisites

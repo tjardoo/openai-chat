@@ -13,6 +13,7 @@ export interface Message {
 	content: string
 	prompt_tokens: number | null
 	completion_tokens: number | null
+	temperature: number
 	created_at: string
 }
 </script>
