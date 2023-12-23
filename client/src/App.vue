@@ -83,7 +83,7 @@ const updateChatTitle = (title: string) => {
 					<ShowChatTitle :selected-chat="selectedChat" @update-chat-title="updateChatTitle" />
 				</div>
 
-				<div class="h-full px-3 overflow-y-auto">
+				<div class="h-full overflow-y-auto">
 					<ListMessages :selected-chat="selectedChat" :is-fetching="isFetchMessages" />
 				</div>
 

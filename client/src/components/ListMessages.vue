@@ -20,13 +20,13 @@ const props = defineProps({
 const isLoading = ref<boolean>(false)
 const messages = ref<Array<Message>>([])
 
-const updateMessages = () => {
+const fetchMessages = () => {
 	isLoading.value = true
 
 	fetch(`http://localhost:3000/api/v1/chats/${props.selectedChat.id}/messages`, { method: 'GET', headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': 'http://localhost:3000' } })
 		.then((response) => response.json())
 		.then((data: Array<Message>) => {
-			messages.value = data
+			messages.value = data.reverse()
 			isLoading.value = false
 		})
 		.catch((err) => console.log(err))
@@ -40,7 +40,7 @@ watch(
 		}
 
 		if (first !== second && first === true) {
-			updateMessages()
+			fetchMessages()
 		}
 	},
 	{ immediate: false }
@@ -54,7 +54,7 @@ watch(
 		}
 
 		if (first !== second) {
-			updateMessages()
+			fetchMessages()
 		}
 	},
 	{ immediate: true }
@@ -88,7 +88,7 @@ const formatDateTime = (dateTime: string): string => {
 </script>
 
 <template>
-	<div class="overflow-y-auto [overflow-anchor:none]" id="scroller">
+	<div class="px-2 overflow-y-auto" id="messages">
 		<div v-if="isLoading">Loading...</div>
 
 		<div
@@ -122,7 +122,14 @@ const formatDateTime = (dateTime: string): string => {
 				</div>
 			</div>
 		</div>
-
-		<div id="anchor" class="[overflow-anchor: auto] h-0.5"></div>
 	</div>
 </template>
+
+<style scoped>
+#messages {
+    display: flex;
+    flex-direction: column-reverse;
+    height: 100%;
+    overflow-y: scroll;
+}
+</style>
