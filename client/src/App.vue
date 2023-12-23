@@ -75,7 +75,7 @@ const updateChatTitle = (title: string) => {
 <template>
 	<div class="flex bg-gray-50">
 		<div class="h-screen bg-gray-800 w-96">
-			<ListChats :is-fetching="isFetchChats" @selected-chat-changed="setSelectedChat" @create-chat="createChat" />
+			<ListChats :is-fetching="isFetchChats" :selected-chat="selectedChat" @selected-chat-changed="setSelectedChat" @create-chat="createChat" />
 		</div>
 		<main class="w-full max-w-4xl mx-auto">
 			<div v-if="selectedChat !== undefined" class="flex flex-col h-screen">

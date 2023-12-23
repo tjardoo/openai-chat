@@ -8,7 +8,12 @@ const props = defineProps({
 		type: Boolean,
 		default: false,
 		required: false
-	}
+	},
+    selectedChat: {
+		type: Object as () => Chat | undefined,
+		default: null,
+		required: true
+	},
 })
 
 let chats = ref<Array<Chat>>([])
@@ -34,7 +39,14 @@ defineEmits(['selectedChatChanged', 'createChat'])
 		<StoreChatButton @create-chat="$emit('createChat')" />
 
 		<div v-for="chat in chats" :key="chat.id">
-			<button @click="$emit('selectedChatChanged', chat)" class="w-full px-8 py-2 text-left text-white hover:bg-gray-600">
+			<button
+                @click="$emit('selectedChatChanged', chat)"
+                class="w-full px-8 py-2 text-left text-white hover:bg-gray-600"
+                :class="{
+                    'bg-gray-600': selectedChat?.id === chat.id,
+                    'bg-gray-800': selectedChat?.id !== chat.id
+                }"
+            >
 				{{ chat.title ?? 'Chat ' + chat.id }}
 			</button>
 		</div>
