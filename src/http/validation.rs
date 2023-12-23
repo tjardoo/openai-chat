@@ -81,7 +81,7 @@ fn extract_field_name_from_json_rejection(error: JsonRejection) -> FieldStructEr
                     if start < end {
                         return FieldStructError {
                             name: field[start + 1..end].to_string(),
-                            code: "missing field".to_string(),
+                            code: format!("{} is required", field[start + 1..end].to_string()),
                         };
                     }
                 }
@@ -97,7 +97,10 @@ fn extract_field_name_from_json_rejection(error: JsonRejection) -> FieldStructEr
 
                 return FieldStructError {
                     name: field.split(":").next().unwrap().to_string(),
-                    code: "invalid type".to_string(),
+                    code: format!(
+                        "{} is invalid",
+                        field.split(":").next().unwrap().to_string()
+                    ),
                 };
             }
         }
@@ -142,7 +145,7 @@ where
                         .flat_map(|(field, field_errors)| {
                             field_errors.into_iter().map(|field_error| FieldError {
                                 name: field.to_string(),
-                                code: field_error.code.to_string(),
+                                code: format!("{} is invalid", field.to_string()),
                                 params: field_error
                                     .params
                                     .iter()

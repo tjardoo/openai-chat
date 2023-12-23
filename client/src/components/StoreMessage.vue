@@ -3,6 +3,7 @@ import type { Chat, FieldValidatorError } from '@/Models.vue'
 import type { TextareaHTMLAttributes } from 'vue'
 import { computed, ref, watch } from 'vue'
 import PaperAirplaneIcon from './Icons/PaperAirplaneIcon.vue'
+import ErrorMessage from './Forms/ErrorMessage.vue'
 
 const props = defineProps({
 	selectedChat: {
@@ -99,18 +100,18 @@ const isFieldInvalid = (field: string): boolean => {
     return validationErrors.value.some((fieldValidatorError: FieldValidatorError) => fieldValidatorError.name === field)
 }
 
-const getValidationErrorMessage = (field: string): String => {
+const getValidationError = (field: string): FieldValidatorError|null => {
     if (validationErrors.value === undefined) {
-        return 'Error'
+        return null
     }
 
     const fieldValidatorError = validationErrors.value?.find((fieldValidatorError: FieldValidatorError) => fieldValidatorError.name === field)
 
     if (fieldValidatorError === undefined) {
-        return 'Error'
+        return null
     }
 
-    return fieldValidatorError.code
+    return fieldValidatorError
 }
 
 const emit = defineEmits(['messageSent'])
@@ -129,6 +130,7 @@ const emit = defineEmits(['messageSent'])
                         'border-red-500': isFieldInvalid('content')
                     }"
                 />
+                <ErrorMessage :error="getValidationError('content')" />
 			</div>
 
 			<div class="w-1/4 space-y-1">
@@ -159,9 +161,7 @@ const emit = defineEmits(['messageSent'])
                             </option>
 						</template>
 					</select>
-                    <div class="mt-1 text-xs text-red-500" v-if="isFieldInvalid('model')">
-                        {{ getValidationErrorMessage('model') }}
-                    </div>
+                    <ErrorMessage :error="getValidationError('model')" />
 				</div>
 
 				<div class="flex space-x-2">
@@ -178,9 +178,7 @@ const emit = defineEmits(['messageSent'])
                                 'border-red-500': isFieldInvalid('max_tokens')
                             }"
                         />
-                        <div class="mt-1 text-xs text-red-500" v-if="isFieldInvalid('max_tokens')">
-                            {{ getValidationErrorMessage('max_tokens') }}
-                        </div>
+                        <ErrorMessage :error="getValidationError('max_tokens')" />
 					</div>
 
 					<div class="w-1/2">
@@ -199,15 +197,13 @@ const emit = defineEmits(['messageSent'])
                             max="2"
                             step="0.1"
                         />
-                        <div class="mt-1 text-xs text-red-500" v-if="isFieldInvalid('temperature')">
-                            {{ getValidationErrorMessage('temperature') }}
-                        </div>
+                        <ErrorMessage :error="getValidationError('temperature')" />
 					</div>
 				</div>
 			</div>
 		</div>
 		<div v-if="isError">
-			<div class="py-2 text-sm text-red-500">
+			<div class="py-2 mt-4 text-sm text-red-500">
                 Something went wrong. Please try again.
             </div>
 		</div>

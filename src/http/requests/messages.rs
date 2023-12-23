@@ -11,6 +11,7 @@ pub struct StoreMessageRequest {
     #[validate(length(min = 2, max = 2500))]
     pub content: String,
     pub model: String,
+    #[validate(range(min = 0, max = 10000))]
     #[serde(default, deserialize_with = "deserialize_with_nan")]
     pub max_tokens: Option<u32>,
     #[validate(range(min = 0.0, max = 2.0))]
