@@ -63,7 +63,7 @@ impl IntoResponse for ValidationErrors {
     }
 }
 
-fn extract_field_name_from_json_rejection(error: JsonRejection) -> String {
+fn extract_field_name_from_json_rejection(error: JsonRejection) -> FieldStructError {
     if let JsonRejection::JsonDataError(error) = error {
         if error
             .to_string()
@@ -79,7 +79,10 @@ fn extract_field_name_from_json_rejection(error: JsonRejection) -> String {
 
                 if let (Some(start), Some(end)) = (field.find('`'), field.rfind('`')) {
                     if start < end {
-                        return field[start + 1..end].to_string();
+                        return FieldStructError {
+                            name: field[start + 1..end].to_string(),
+                            code: "missing field".to_string(),
+                        };
                     }
                 }
             }
@@ -92,14 +95,23 @@ fn extract_field_name_from_json_rejection(error: JsonRejection) -> String {
             {
                 let field = error.source().unwrap().to_string();
 
-                return field.split(":").next().unwrap().to_string();
+                return FieldStructError {
+                    name: field.split(":").next().unwrap().to_string(),
+                    code: "invalid type".to_string(),
+                };
             }
         }
 
-        return error.source().unwrap().to_string();
+        return FieldStructError {
+            name: error.source().unwrap().to_string(),
+            code: error.to_string(),
+        };
     }
 
-    return "json error".to_string();
+    return FieldStructError {
+        name: error.source().unwrap().to_string(),
+        code: error.to_string(),
+    };
 }
 
 #[async_trait]
@@ -117,10 +129,7 @@ where
                 .await
                 .map_err(|error| ValidationErrors {
                     errors: ValidationError::Struct {
-                        errors: vec![FieldStructError {
-                            code: error.to_string(),
-                            name: extract_field_name_from_json_rejection(error).to_string(),
-                        }],
+                        errors: vec![extract_field_name_from_json_rejection(error)],
                     },
                 })?;
 
