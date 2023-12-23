@@ -16,4 +16,9 @@ export interface Message {
 	temperature: number
 	created_at: string
 }
+
+export interface FieldValidatorError {
+    name: String,
+    code: String,
+}
 </script>
