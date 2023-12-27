@@ -88,7 +88,10 @@ const formatDateTime = (dateTime: string): string => {
 </script>
 
 <template>
-	<div class="px-2 overflow-y-auto" id="messages">
+	<div
+		class="px-2 overflow-y-auto min-h-[480px]"
+		id="messages"
+	>
 		<div v-if="isLoading">Loading...</div>
 
 		<div
@@ -127,9 +130,9 @@ const formatDateTime = (dateTime: string): string => {
 
 <style scoped>
 #messages {
-    display: flex;
-    flex-direction: column-reverse;
-    height: 100%;
-    overflow-y: scroll;
+	display: flex;
+	flex-direction: column-reverse;
+	height: 100%;
+	overflow-y: scroll;
 }
 </style>

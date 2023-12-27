@@ -18,7 +18,7 @@ export interface Message {
 }
 
 export interface FieldValidatorError {
-    name: String,
-    code: String,
+	name: String
+	code: String
 }
 </script>

@@ -31,8 +31,19 @@ defineEmits(['updateChatTitle'])
 
 <template>
 	<div class="flex space-x-4">
-		<input type="text" v-model="chatName" placeholder="Chat name" class="w-full px-4 py-2 text-gray-700 border border-gray-300 rounded-lg" @change="$emit('updateChatTitle', chatName)" />
+		<input
+			type="text"
+			v-model="chatName"
+			placeholder="Chat name"
+			class="w-full px-4 py-2 text-gray-700 border border-gray-300 rounded-lg"
+			@change="$emit('updateChatTitle', chatName)"
+		/>
 
-		<button :disabled="chatName === ''" class="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg disabled:cursor-not-allowed disabled:opacity-50">Update</button>
+		<button
+			:disabled="chatName === ''"
+			class="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg disabled:cursor-not-allowed disabled:opacity-50"
+		>
+			Update
+		</button>
 	</div>
 </template>

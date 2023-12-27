@@ -4,12 +4,14 @@ import ListChats from './components/ListChats.vue'
 import ListMessages from './components/ListMessages.vue'
 import StoreMessage from './components/StoreMessage.vue'
 import ShowChatTitle from './components/ShowChatTitle.vue'
+import ChevronRightIcon from './components/Icons/ChevronRightIcon.vue'
 import type { Chat } from './Models.vue'
 
 let selectedChat = ref<Chat | undefined>(undefined)
 let models = ref<Array<String> | undefined>(undefined)
 let isFetchChats = ref<boolean>(false)
 let isFetchMessages = ref<boolean>(false)
+let isSidebarOpen = ref<boolean>(true)
 
 const setSelectedChat = (chat: Chat) => {
 	selectedChat.value = chat
@@ -70,25 +72,67 @@ const updateChatTitle = (title: string) => {
 		})
 		.catch((err) => console.log(err))
 }
+
+const toggleSidebar = (shouldOpen: boolean) => {
+	isSidebarOpen.value = shouldOpen
+}
 </script>
 
 <template>
 	<div class="flex bg-gray-50">
-		<div class="h-screen bg-gray-800 w-96">
-			<ListChats :is-fetching="isFetchChats" :selected-chat="selectedChat" @selected-chat-changed="setSelectedChat" @create-chat="createChat" />
+		<div
+			class="h-screen bg-gray-800"
+			:class="{
+				'w-16': !isSidebarOpen,
+				'w-96': isSidebarOpen
+			}"
+		>
+			<ListChats
+				:is-fetching="isFetchChats"
+				:selected-chat="selectedChat"
+				:is-sidebar-open="isSidebarOpen"
+				@selected-chat-changed="setSelectedChat"
+				@create-chat="createChat"
+				@toggle-sidebar="toggleSidebar"
+				v-if="isSidebarOpen"
+			/>
+			<div
+				class="relative h-screen py-12 overflow-y-auto"
+				v-if="isSidebarOpen === false"
+			>
+				<button
+					@click="toggleSidebar(true)"
+					class="absolute top-0 right-0 px-4 py-4"
+				>
+					<ChevronRightIcon class="text-white" />
+				</button>
+			</div>
 		</div>
-		<main class="w-full max-w-4xl mx-auto">
-			<div v-if="selectedChat !== undefined" class="flex flex-col h-screen">
+		<main class="w-full max-w-4xl px-4 mx-auto xl:px-0">
+			<div
+				v-if="selectedChat !== undefined"
+				class="flex flex-col h-screen"
+			>
 				<div class="my-6">
-					<ShowChatTitle :selected-chat="selectedChat" @update-chat-title="updateChatTitle" />
+					<ShowChatTitle
+						:selected-chat="selectedChat"
+						@update-chat-title="updateChatTitle"
+					/>
 				</div>
 
 				<div class="h-full overflow-y-auto">
-					<ListMessages :selected-chat="selectedChat" :is-fetching="isFetchMessages" />
+					<ListMessages
+						:selected-chat="selectedChat"
+						:is-fetching="isFetchMessages"
+					/>
 				</div>
 
 				<div class="h-auto">
-					<StoreMessage :selected-chat="selectedChat" :models="models" @message-sent="fetchMessages" />
+					<StoreMessage
+						:selected-chat="selectedChat"
+						:models="models"
+						@message-sent="fetchMessages"
+					/>
 				</div>
 			</div>
 		</main>

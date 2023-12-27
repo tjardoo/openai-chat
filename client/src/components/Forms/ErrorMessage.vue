@@ -11,7 +11,10 @@ const props = defineProps({
 </script>
 
 <template>
-    <div class="mt-1 text-xs text-red-500" v-if="error">
-        {{ props.error?.code  }}
-    </div>
+	<div
+		class="mt-1 text-xs text-red-500"
+		v-if="error"
+	>
+		{{ props.error?.code }}
+	</div>
 </template>

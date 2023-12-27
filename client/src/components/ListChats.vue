@@ -2,6 +2,7 @@
 import type { Chat } from '@/Models.vue'
 import { ref, watch } from 'vue'
 import StoreChatButton from './StoreChatButton.vue'
+import ChrevronLeftIcon from './Icons/ChevronLeftIcon.vue'
 
 const props = defineProps({
 	isFetching: {
@@ -9,11 +10,14 @@ const props = defineProps({
 		default: false,
 		required: false
 	},
-    selectedChat: {
+	selectedChat: {
 		type: Object as () => Chat | undefined,
-		default: null,
 		required: true
 	},
+	isSidebarOpen: {
+		type: Boolean,
+		required: true
+	}
 })
 
 let chats = ref<Array<Chat>>([])
@@ -31,22 +35,32 @@ watch(
 	{ immediate: true }
 )
 
-defineEmits(['selectedChatChanged', 'createChat'])
+defineEmits(['selectedChatChanged', 'createChat', 'toggleSidebar'])
 </script>
 
 <template>
-	<div class="h-screen py-12 overflow-y-auto">
+	<div class="relative h-screen py-12 overflow-y-auto">
+		<button
+			@click="$emit('toggleSidebar', false)"
+			class="absolute top-0 right-0 px-4 py-4"
+		>
+			<ChrevronLeftIcon class="text-white" />
+		</button>
+
 		<StoreChatButton @create-chat="$emit('createChat')" />
 
-		<div v-for="chat in chats" :key="chat.id">
+		<div
+			v-for="chat in chats"
+			:key="chat.id"
+		>
 			<button
-                @click="$emit('selectedChatChanged', chat)"
-                class="w-full px-8 py-2 text-left text-white hover:bg-gray-600"
-                :class="{
-                    'bg-gray-600': selectedChat?.id === chat.id,
-                    'bg-gray-800': selectedChat?.id !== chat.id
-                }"
-            >
+				@click="$emit('selectedChatChanged', chat)"
+				class="w-full px-8 py-2 text-left text-white hover:bg-gray-600"
+				:class="{
+					'bg-gray-600': selectedChat?.id === chat.id,
+					'bg-gray-800': selectedChat?.id !== chat.id
+				}"
+			>
 				{{ chat.title ?? 'Chat ' + chat.id }}
 			</button>
 		</div>

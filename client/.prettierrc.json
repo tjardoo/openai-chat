@@ -5,5 +5,7 @@
 	"useTabs": true,
 	"singleQuote": true,
 	"printWidth": 999,
-	"trailingComma": "none"
+	"trailingComma": "none",
+	"htmlWhitespaceSensitivity": "ignore",
+	"singleAttributePerLine": true
 }

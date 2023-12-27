@@ -20,16 +20,16 @@ const props = defineProps({
 
 const isLoading = ref<boolean>(false)
 const isError = ref<boolean>(false)
-const validationErrors = ref<Array<FieldValidatorError>|null>(null)
+const validationErrors = ref<Array<FieldValidatorError> | null>(null)
 const content = ref<TextareaHTMLAttributes['value']>('')
 const model = ref<string | null>(null)
-const maxTokens = ref<number | string>("")
+const maxTokens = ref<number | string>('')
 const temperature = ref<number>(1)
 
 const clearErrors = (): void => {
-    isError.value = false
-    isLoading.value = false
-    validationErrors.value = null
+	isError.value = false
+	isLoading.value = false
+	validationErrors.value = null
 }
 
 const sendMessage = (): void => {
@@ -46,17 +46,17 @@ const sendMessage = (): void => {
 		})
 	})
 		.then((response) => {
-            return response.json()
-        })
+			return response.json()
+		})
 		.then((data) => {
-            if(data.errors !== undefined) {
-                validationErrors.value = data.errors
+			if (data.errors !== undefined) {
+				validationErrors.value = data.errors
 
-                isError.value = true
-                isLoading.value = false
+				isError.value = true
+				isLoading.value = false
 
-                return
-            }
+				return
+			}
 
 			clearErrors()
 
@@ -79,10 +79,10 @@ watch(
 			return
 		}
 
-        clearErrors()
-        maxTokens.value = ""
-        temperature.value = 1
-        content.value = ''
+		clearErrors()
+		maxTokens.value = ''
+		temperature.value = 1
+		content.value = ''
 		model.value = first.last_used_model
 	},
 	{ immediate: true }
@@ -93,25 +93,25 @@ const isSendButtonDisabled = computed((): boolean => {
 })
 
 const isFieldInvalid = (field: string): boolean => {
-    if (validationErrors.value === null) {
-        return false
-    }
+	if (validationErrors.value === null) {
+		return false
+	}
 
-    return validationErrors.value.some((fieldValidatorError: FieldValidatorError) => fieldValidatorError.name === field)
+	return validationErrors.value.some((fieldValidatorError: FieldValidatorError) => fieldValidatorError.name === field)
 }
 
-const getValidationError = (field: string): FieldValidatorError|null => {
-    if (validationErrors.value === undefined) {
-        return null
-    }
+const getValidationError = (field: string): FieldValidatorError | null => {
+	if (validationErrors.value === undefined) {
+		return null
+	}
 
-    const fieldValidatorError = validationErrors.value?.find((fieldValidatorError: FieldValidatorError) => fieldValidatorError.name === field)
+	const fieldValidatorError = validationErrors.value?.find((fieldValidatorError: FieldValidatorError) => fieldValidatorError.name === field)
 
-    if (fieldValidatorError === undefined) {
-        return null
-    }
+	if (fieldValidatorError === undefined) {
+		return null
+	}
 
-    return fieldValidatorError
+	return fieldValidatorError
 }
 
 const emit = defineEmits(['messageSent'])
@@ -119,93 +119,106 @@ const emit = defineEmits(['messageSent'])
 
 <template>
 	<div class="mt-2 mb-8">
-		<div class="flex space-x-4">
-			<div class="w-3/4">
+		<div class="flex flex-wrap">
+			<div class="w-full xl:w-3/4">
 				<textarea
-                    v-model="content"
-                    rows="8"
-                    placeholder="Hello.."
-                    class="w-full h-full p-2 border border-gray-300 rounded-lg focus:outline-none"
-                    :class="{
-                        'border-red-500': isFieldInvalid('content')
-                    }"
-                />
-                <ErrorMessage :error="getValidationError('content')" />
+					v-model="content"
+					rows="8"
+					placeholder="Hello.."
+					class="w-full h-full p-2 border border-gray-300 rounded-lg focus:outline-none"
+					:class="{
+						'border-red-500': isFieldInvalid('content')
+					}"
+				/>
+				<ErrorMessage :error="getValidationError('content')" />
 			</div>
 
-			<div class="w-1/4 space-y-1">
+			<div class="flex flex-row-reverse w-full space-y-1 xl:flex-row xl:block xl:w-1/4 xl:pl-4 xl:pt-0">
 				<button
-                    @click="sendMessage"
-                    :disabled="isSendButtonDisabled"
-                    class="flex items-center justify-end w-full h-16 px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg disabled:cursor-not-allowed disabled:opacity-50"
-                >
+					@click="sendMessage"
+					:disabled="isSendButtonDisabled"
+					class="flex items-center justify-end w-1/3 px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg mt-7 xl:mt-0 xl:w-full disabled:cursor-not-allowed disabled:opacity-50"
+				>
 					<template v-if="isLoading">Loading..</template>
-					<template v-else> Send <PaperAirplaneIcon class="ml-3" /> </template>
+					<template v-else>
+						Send
+						<PaperAirplaneIcon class="ml-3 text-xl" />
+					</template>
 				</button>
 
-				<div>
-					<label for="model" class="text-gray-500 text-[10px]">
-                        OpenAI model
-                    </label>
+				<div class="w-full mr-2 xl:mr-0">
+					<label
+						for="model"
+						class="text-gray-500 text-[10px]"
+					>
+						OpenAI model
+					</label>
 					<select
-                        id="model"
-                        v-model="model"
-                        class="w-full px-4 py-2 text-gray-700 border border-gray-300 rounded-lg"
-                        :class="{
-                            'border-red-500': isFieldInvalid('model')
-                        }"
-                    >
-						<template v-for="model in models" :key="model">
+						id="model"
+						v-model="model"
+						class="w-full px-4 py-2 text-gray-700 border border-gray-300 rounded-lg"
+						:class="{
+							'border-red-500': isFieldInvalid('model')
+						}"
+					>
+						<template
+							v-for="model in models"
+							:key="model"
+						>
 							<option :value="model">
-                                {{ model }}
-                            </option>
+								{{ model }}
+							</option>
 						</template>
 					</select>
-                    <ErrorMessage :error="getValidationError('model')" />
+					<ErrorMessage :error="getValidationError('model')" />
 				</div>
 
-				<div class="flex space-x-2">
+				<div class="hidden w-full space-x-2 xl:flex">
 					<div class="w-1/2">
-						<label for="max_tokens" class="text-gray-500 text-[10px]">
-                            Max. tokens
-                        </label>
+						<label
+							for="max_tokens"
+							class="text-gray-500 text-[10px]"
+						>
+							Max. tokens
+						</label>
 						<input
-                            type="text"
-                            id="max_tokens"
-                            v-model="maxTokens"
-                            class="w-full px-4 py-2 text-gray-700 border border-gray-300 rounded-lg"
-                            :class="{
-                                'border-red-500': isFieldInvalid('max_tokens')
-                            }"
-                        />
-                        <ErrorMessage :error="getValidationError('max_tokens')" />
+							type="text"
+							id="max_tokens"
+							v-model="maxTokens"
+							class="w-full px-4 py-2 text-gray-700 border border-gray-300 rounded-lg"
+							:class="{
+								'border-red-500': isFieldInvalid('max_tokens')
+							}"
+						/>
+						<ErrorMessage :error="getValidationError('max_tokens')" />
 					</div>
 
 					<div class="w-1/2">
-						<label for="temperature" class="text-gray-500 text-[10px]">
-                            Temperature
-                        </label>
+						<label
+							for="temperature"
+							class="text-gray-500 text-[10px]"
+						>
+							Temperature
+						</label>
 						<input
-                            type="number"
-                            id="temperature"
-                            v-model="temperature"
-                            class="w-full px-4 py-2 text-gray-700 border border-gray-300 rounded-lg"
-                            :class="{
-                                'border-red-500': isFieldInvalid('temperature')
-                            }"
-                            min="0"
-                            max="2"
-                            step="0.1"
-                        />
-                        <ErrorMessage :error="getValidationError('temperature')" />
+							type="number"
+							id="temperature"
+							v-model="temperature"
+							class="w-full px-4 py-2 text-gray-700 border border-gray-300 rounded-lg"
+							:class="{
+								'border-red-500': isFieldInvalid('temperature')
+							}"
+							min="0"
+							max="2"
+							step="0.1"
+						/>
+						<ErrorMessage :error="getValidationError('temperature')" />
 					</div>
 				</div>
 			</div>
 		</div>
 		<div v-if="isError">
-			<div class="py-2 mt-4 text-sm text-red-500">
-                Something went wrong. Please try again.
-            </div>
+			<div class="py-2 mt-4 text-sm text-red-500">Something went wrong. Please try again.</div>
 		</div>
 	</div>
 </template>
