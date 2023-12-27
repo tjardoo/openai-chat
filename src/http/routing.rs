@@ -29,8 +29,7 @@ pub fn api() -> Router<Arc<AppState>> {
 
     let messages_router = Router::new()
         .route("/", get(handlers::api::messages::index))
-        .route("/", post(handlers::api::messages::store))
-        .route("/:id", get(handlers::api::messages::show));
+        .route("/", post(handlers::api::messages::store));
 
     Router::new().nest(
         "/v1",
