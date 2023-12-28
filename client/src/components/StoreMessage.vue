@@ -17,6 +17,8 @@ const props = defineProps({
 	}
 })
 
+const emit = defineEmits(['updateReceivedChunks'])
+
 const isLoading = ref<boolean>(false)
 const isError = ref<boolean>(false)
 const validationErrors = ref<Array<FieldValidatorError> | null>(null)
@@ -73,6 +75,7 @@ const sendMessage = (): void => {
             receivedChunks.value += textDecoder.decode(value)
 
             console.log("Incoming: " + receivedChunks.value)
+            emit('updateReceivedChunks', receivedChunks.value)
 
             return reader.read().then(processText)
         })
@@ -120,18 +123,12 @@ const getValidationError = (field: string): FieldValidatorError | null => {
 
 	return fieldValidatorError
 }
-
-const emit = defineEmits(['messageSent'])
 </script>
 
 <template>
 	<div class="mt-2 mb-8">
 		<div class="flex flex-wrap">
 			<div class="w-full xl:w-3/4">
-                <div class="w-full">
-                    <p>Received chunks: {{ receivedChunks }}</p>
-                </div>
-
 				<textarea
 					v-model="content"
 					rows="8"

@@ -13,7 +13,12 @@ const props = defineProps({
 		type: Boolean,
 		default: false,
 		required: false
-	}
+	},
+    receivedChunks: {
+        type: String,
+        default: '',
+        required: false
+    },
 })
 
 const isLoading = ref<boolean>(false)
@@ -114,7 +119,8 @@ const formatDateTime = (dateTime: string): string => {
 						'text-right bg-blue-600 text-white': message.role === 'user'
 					}"
 					v-html="hightlightCodeExamples(message.content)"
-				></div>
+				>
+                </div>
 				<div class="text-right">
 					<div class="text-[10px] text-gray-400 mt-1">
 						<span>{{ formatDateTime(message.created_at) }}</span>
@@ -128,6 +134,17 @@ const formatDateTime = (dateTime: string): string => {
 				</div>
 			</div>
 		</div>
+
+
+        <div class="flex justify-start mt-1 mb-3" v-if="receivedChunks">
+            <div class="flex flex-col">
+                <div
+                    class="flex-none px-3 py-1 font-light text-left text-gray-700 bg-gray-300 rounded-lg"
+                    v-html="hightlightCodeExamples(receivedChunks)"
+                >
+                </div>
+            </div>
+        </div>
 	</div>
 </template>
 

@@ -7,11 +7,12 @@ import ShowChatTitle from './components/ShowChatTitle.vue'
 import ChevronRightIcon from './components/Icons/ChevronRightIcon.vue'
 import type { Chat } from './Models.vue'
 
-let selectedChat = ref<Chat | null>(null)
-let models = ref<Array<String> | undefined>(undefined)
-let isFetchChats = ref<boolean>(false)
-let isFetchMessages = ref<boolean>(false)
-let isSidebarOpen = ref<boolean>(true)
+const selectedChat = ref<Chat | null>(null)
+const models = ref<Array<String> | undefined>(undefined)
+const isFetchChats = ref<boolean>(false)
+const isFetchMessages = ref<boolean>(false)
+const isSidebarOpen = ref<boolean>(true)
+const receivedChunks = ref<string>('')
 
 const setSelectedChat = (chat: Chat) => {
 	selectedChat.value = chat
@@ -52,6 +53,10 @@ const fetchMessages = () => {
 	setTimeout(() => {
 		isFetchMessages.value = false
 	}, 1000)
+}
+
+const updateReceivedChunks = (value: string) => {
+    receivedChunks.value = value
 }
 
 const updateChatTitle = (title: string) => {
@@ -124,6 +129,7 @@ const toggleSidebar = (shouldOpen: boolean) => {
 					<ListMessages
 						:selected-chat="selectedChat"
 						:is-fetching="isFetchMessages"
+                        :receivedChunks="receivedChunks"
 					/>
 				</div>
 
@@ -132,6 +138,7 @@ const toggleSidebar = (shouldOpen: boolean) => {
 						:selected-chat="selectedChat"
 						:models="models"
 						@message-sent="fetchMessages"
+                        @update-received-chunks="updateReceivedChunks"
 					/>
 				</div>
 			</div>

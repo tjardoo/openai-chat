@@ -5,7 +5,6 @@ use axum::{
     Json,
 };
 use axum_streams::StreamBodyAs;
-use core::iter;
 use futures::{stream, Stream};
 use openai_dive::v1::{
     api::Client,
@@ -58,21 +57,6 @@ pub async fn index(
     }
 }
 
-// async fn test_text_stream() -> impl IntoResponse {
-//     StreamBodyAs::text(source_test_stream())
-// }
-
-fn source_test_stream() -> impl Stream<Item = String> {
-    stream::iter(vec![
-        "Hello".to_string(),
-        "World".to_string(),
-        "How".to_string(),
-        "Are".to_string(),
-        "You".to_string(),
-    ])
-    .throttle(std::time::Duration::from_secs(1))
-}
-
 type OpenAIStream =
     Pin<Box<dyn Stream<Item = Result<ChatCompletionChunkResponse, APIError>> + std::marker::Send>>;
 
@@ -97,24 +81,6 @@ fn source_openai_stream(stream: OpenAIStream) -> impl Stream<Item = String> {
         }
     })
 }
-
-// async fn source_openai_stream(mut stream: OpenAIStream) -> impl IntoResponse {
-//     while let Some(response) = stream.next().await {
-//         match response {
-//             Ok(chat_response) => chat_response.choices.iter().for_each(|choice| {
-//                 if let Some(content) = &choice.delta.content {
-//                     dbg!(content);
-
-//                     print!("{}", content);
-
-//                     stream::iter(iter::once(content.to_string()))
-//                         .throttle(std::time::Duration::from_secs(1));
-//                 }
-//             }),
-//             Err(e) => eprintln!("{}", e),
-//         }
-//     }
-// }
 
 pub async fn store(
     Path(chat_id): Path<u32>,
@@ -152,61 +118,7 @@ pub async fn store(
 
     let client = Client::new(api_key);
 
-    let mut stream = client.chat().create_stream(parameters).await.unwrap();
-
-    // let mut message = String::new();
+    let stream = client.chat().create_stream(parameters).await.unwrap();
 
     StreamBodyAs::text(source_openai_stream(stream))
-    // StreamBodyAs::text(source_openai_stream(stream))
-
-    // let _message = crate::dive::send_message(
-    //     &state.pool,
-    //     chat_id,
-    //     &model,
-    //     request.max_tokens,
-    //     request.temperature,
-    // )
-    // .await
-    // .unwrap();
-
-    // sqlx::query_as!(
-    //     Chat,
-    //     "UPDATE chats SET last_used_model = ? WHERE id = ?",
-    //     model,
-    //     chat_id
-    // )
-    // .execute(&state.pool)
-    // .await
-    // .unwrap();
-
-    // match sqlx::query_as!(
-    //     Message,
-    //     "SELECT
-    //         id,
-    //         chat_id,
-    //         role AS \"role: Role\",
-    //         content,
-    //         used_model,
-    //         prompt_tokens AS \"prompt_tokens: u32\",
-    //         completion_tokens AS \"completion_tokens: u32\",
-    //         temperature AS \"temperature: f32\",
-    //         created_at
-    //     FROM
-    //         messages
-    //     WHERE
-    //         id = ?",
-    //     last_inserted_id
-    // )
-    // .fetch_one(&state.pool)
-    // .await
-    // {
-    //     Ok(message) => Ok((StatusCode::CREATED, Json(message))),
-    //     Err(error) => Err((
-    //         StatusCode::NOT_FOUND,
-    //         Json(JsonError {
-    //             code: StatusCode::NOT_FOUND.as_u16(),
-    //             error: error.to_string(),
-    //         }),
-    //     )),
-    // }
 }
