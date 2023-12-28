@@ -6,9 +6,8 @@ import { decode } from 'he'
 
 const props = defineProps({
 	selectedChat: {
-		type: Object as () => Chat,
+		type: Object as () => Chat | null,
 		default: null,
-		required: true
 	},
 	isFetching: {
 		type: Boolean,
@@ -21,6 +20,10 @@ const isLoading = ref<boolean>(false)
 const messages = ref<Array<Message>>([])
 
 const fetchMessages = () => {
+    if (props.selectedChat === null) {
+        return
+    }
+
 	isLoading.value = true
 
 	fetch(`http://localhost:3000/api/v1/chats/${props.selectedChat.id}/messages`, { method: 'GET', headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': 'http://localhost:3000' } })
@@ -49,7 +52,7 @@ watch(
 watch(
 	() => props.selectedChat,
 	(first, second) => {
-		if (first === undefined) {
+		if (first === null) {
 			return
 		}
 

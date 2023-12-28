@@ -4,9 +4,8 @@ import { ref, watch } from 'vue'
 
 const props = defineProps({
 	selectedChat: {
-		type: Object as () => Chat,
+		type: Object as () => Chat | null,
 		default: null,
-		required: true
 	}
 })
 
@@ -15,7 +14,7 @@ const chatName = ref<string | undefined>()
 watch(
 	() => props.selectedChat,
 	(first, second) => {
-		if (first === undefined) {
+		if (first === null) {
 			return
 		}
 

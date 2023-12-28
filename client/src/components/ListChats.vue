@@ -11,8 +11,8 @@ const props = defineProps({
 		required: false
 	},
 	selectedChat: {
-		type: Object as () => Chat | undefined,
-		required: true
+		type: Object as () => Chat | null,
+        default: null,
 	},
 	isSidebarOpen: {
 		type: Boolean,

@@ -1,9 +1,7 @@
+use futures::StreamExt;
 use openai_dive::v1::{
     api::Client,
-    resources::{
-        chat::{ChatCompletionChoice, ChatCompletionParameters, ChatMessage},
-        shared::Usage,
-    },
+    resources::chat::{ChatCompletionParameters, ChatMessage},
 };
 use sqlx::{MySql, Pool};
 use std::{env, error::Error};
@@ -16,7 +14,7 @@ pub async fn send_message(
     model_name: &str,
     max_tokens: Option<u32>,
     temperature: Option<f32>,
-) -> Result<Usage, Box<dyn Error>> {
+) -> Result<String, Box<dyn Error>> {
     let api_key = env::var("OPENAI_API_KEY").expect("$OPENAI_API_KEY is not set");
 
     let messages = get_messages_by_chat_id(&pool, chat_id).await?;
@@ -33,22 +31,29 @@ pub async fn send_message(
 
     let client = Client::new(api_key);
 
-    let result = client.chat().create(parameters).await.unwrap();
+    let mut stream = client.chat().create_stream(parameters).await.unwrap();
 
-    add_completed_messages_to_chat(
-        &pool,
-        chat_id,
-        result.choices,
-        model_name,
-        result.usage.completion_tokens,
-        temperature,
-    )
-    .await?;
+    let mut message = String::new();
 
-    Ok(result.usage)
+    while let Some(response) = stream.next().await {
+        match response {
+            Ok(chat_response) => chat_response.choices.iter().for_each(|choice| {
+                if let Some(content) = &choice.delta.content {
+                    message.push_str(content);
+
+                    print!("{}", content);
+                }
+            }),
+            Err(e) => eprintln!("{}", e),
+        }
+    }
+
+    add_message_to_chat(&pool, chat_id, &message, model_name, &temperature).await?;
+
+    Ok(message)
 }
 
-async fn get_messages_by_chat_id(
+pub async fn get_messages_by_chat_id(
     pool: &Pool<MySql>,
     chat_id: u32,
 ) -> Result<Vec<Message>, Box<dyn Error>> {
@@ -76,45 +81,20 @@ async fn get_messages_by_chat_id(
     Ok(messages)
 }
 
-async fn add_completed_messages_to_chat(
-    pool: &Pool<MySql>,
-    chat_id: u32,
-    messages: Vec<ChatCompletionChoice>,
-    used_model: &str,
-    max_tokens: Option<u32>,
-    temperature: Option<f32>,
-) -> Result<(), Box<dyn Error>> {
-    for message in messages {
-        add_message_to_chat(
-            pool,
-            chat_id,
-            message,
-            &used_model,
-            &max_tokens,
-            &temperature,
-        )
-        .await?;
-    }
-
-    Ok(())
-}
-
 async fn add_message_to_chat(
     pool: &Pool<MySql>,
     chat_id: u32,
-    message: ChatCompletionChoice,
+    message: &str,
     used_model: &str,
-    completion_tokens: &Option<u32>,
     temperature: &Option<f32>,
 ) -> Result<(), Box<dyn Error>> {
     sqlx::query_as!(
         Message,
-        "INSERT INTO messages (chat_id, role, content, used_model, completion_tokens, temperature) VALUES (?, ?, ?, ?, ?, ?)",
+        "INSERT INTO messages (chat_id, role, content, used_model, temperature) VALUES (?, ?, ?, ?, ?)",
         chat_id,
         "assistant".to_string(),
-        message.message.content,
+        message,
         used_model,
-        completion_tokens,
         temperature
     )
     .execute(pool)

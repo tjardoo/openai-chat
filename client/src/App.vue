@@ -7,7 +7,7 @@ import ShowChatTitle from './components/ShowChatTitle.vue'
 import ChevronRightIcon from './components/Icons/ChevronRightIcon.vue'
 import type { Chat } from './Models.vue'
 
-let selectedChat = ref<Chat | undefined>(undefined)
+let selectedChat = ref<Chat | null>(null)
 let models = ref<Array<String> | undefined>(undefined)
 let isFetchChats = ref<boolean>(false)
 let isFetchMessages = ref<boolean>(false)
@@ -55,7 +55,7 @@ const fetchMessages = () => {
 }
 
 const updateChatTitle = (title: string) => {
-	if (selectedChat.value === undefined) {
+	if (selectedChat.value === null) {
 		return
 	}
 

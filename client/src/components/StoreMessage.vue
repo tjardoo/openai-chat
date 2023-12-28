@@ -7,9 +7,8 @@ import ErrorMessage from './Forms/ErrorMessage.vue'
 
 const props = defineProps({
 	selectedChat: {
-		type: Object as () => Chat,
+		type: Object as () => Chat | null,
 		default: null,
-		required: true
 	},
 	models: {
 		type: Array as () => Array<String>,
@@ -22,9 +21,12 @@ const isLoading = ref<boolean>(false)
 const isError = ref<boolean>(false)
 const validationErrors = ref<Array<FieldValidatorError> | null>(null)
 const content = ref<TextareaHTMLAttributes['value']>('')
-const model = ref<string | null>(null)
+const model = ref<string>('gpt-4-0613')
 const maxTokens = ref<number | string>('')
 const temperature = ref<number>(1)
+const receivedChunks = ref<string>('')
+
+const textDecoder = new TextDecoder('utf-8');
 
 const clearErrors = (): void => {
 	isError.value = false
@@ -32,7 +34,16 @@ const clearErrors = (): void => {
 	validationErrors.value = null
 }
 
+const streamCompleted = (): void => {
+    isLoading.value = false
+}
+
+
 const sendMessage = (): void => {
+    if (props.selectedChat === null) {
+        return
+    }
+
 	isLoading.value = true
 
 	fetch(`http://localhost:3000/api/v1/chats/${props.selectedChat.id}/messages`, {
@@ -45,37 +56,33 @@ const sendMessage = (): void => {
 			temperature: temperature.value
 		})
 	})
-		.then((response) => {
-			return response.json()
-		})
-		.then((data) => {
-			if (data.errors !== undefined) {
-				validationErrors.value = data.errors
+    .then((response) => {
+        if (response.body === null) {
+            return
+        }
 
-				isError.value = true
-				isLoading.value = false
+        const reader = response.body.getReader()
 
-				return
-			}
+        reader.read().then(function processText({ done, value }): any {
+            if (done === true) {
+                streamCompleted()
 
-			clearErrors()
+                return
+            }
 
-			content.value = ''
+            receivedChunks.value += textDecoder.decode(value)
 
-			emit('messageSent')
-		})
-		.catch((error) => {
-			isError.value = true
-			isLoading.value = false
+            console.log("Incoming: " + receivedChunks.value)
 
-			console.log(error)
-		})
+            return reader.read().then(processText)
+        })
+    })
 }
 
 watch(
 	() => props.selectedChat,
 	(first, second) => {
-		if (first === undefined) {
+		if (first === null) {
 			return
 		}
 
@@ -83,7 +90,7 @@ watch(
 		maxTokens.value = ''
 		temperature.value = 1
 		content.value = ''
-		model.value = first.last_used_model
+		// model.value = first.last_used_model
 	},
 	{ immediate: true }
 )
@@ -121,6 +128,10 @@ const emit = defineEmits(['messageSent'])
 	<div class="mt-2 mb-8">
 		<div class="flex flex-wrap">
 			<div class="w-full xl:w-3/4">
+                <div class="w-full">
+                    <p>Received chunks: {{ receivedChunks }}</p>
+                </div>
+
 				<textarea
 					v-model="content"
 					rows="8"

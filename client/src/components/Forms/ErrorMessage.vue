@@ -5,7 +5,6 @@ const props = defineProps({
 	error: {
 		type: Object as () => FieldValidatorError | null,
 		default: null,
-		required: true
 	}
 })
 </script>
