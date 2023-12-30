@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref } from 'vue'
 import hljs from 'highlight.js/lib/core'
 import { decode } from 'he'
 import { useChatStore } from '@/stores/ChatStore'
-import type { Message, Chat } from '@/Models.vue'
+import { useMessagesStore } from '@/stores/MessagesStore'
+import type { Message } from '@/Models.vue'
 
 const chatStore = useChatStore()
+const messagesStore = useMessagesStore()
 
 const props = defineProps({
 	isFetching: {
@@ -21,40 +23,21 @@ const props = defineProps({
 })
 
 const isLoading = ref<boolean>(false)
-const messages = ref<Array<Message>>([])
 
-const fetchMessages = () => {
+chatStore.$subscribe((mutation, state) => {
+	isLoading.value = true
+
 	if (chatStore.activeChat === null) {
 		return
 	}
 
-	isLoading.value = true
-
 	fetch(`http://localhost:3000/api/v1/chats/${chatStore.activeChat.id}/messages`, { method: 'GET', headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': 'http://localhost:3000' } })
 		.then((response) => response.json())
-		.then((data: Array<Message>) => {
-			messages.value = data.reverse()
+		.then((messages: Array<Message>) => {
+			messagesStore.setMessages(messages.reverse())
 			isLoading.value = false
 		})
 		.catch((err) => console.log(err))
-}
-
-watch(
-	() => props.isFetching,
-	(first, second) => {
-		if (first == undefined) {
-			return
-		}
-
-		if (first !== second && first === true) {
-			fetchMessages()
-		}
-	},
-	{ immediate: false }
-)
-
-chatStore.$subscribe((mutation, state) => {
-	fetchMessages()
 })
 
 const hightlightCodeExamples = (message: string): string => {
@@ -92,7 +75,7 @@ const formatDateTime = (dateTime: string): string => {
 		<div v-if="isLoading">Loading...</div>
 
 		<div
-			v-for="message in messages"
+			v-for="message in messagesStore.messages"
 			:key="message.id"
 			class="flex mt-1 mb-3"
 			:class="{
@@ -113,7 +96,6 @@ const formatDateTime = (dateTime: string): string => {
 					<div class="text-[10px] text-gray-400 mt-1">
 						<span>{{ formatDateTime(message.created_at) }}</span>
 						&bull;
-						<span>{{ message.prompt_tokens || message.completion_tokens || 0 }}</span>
 						<template v-if="message.temperature">
 							&bull;
 							<span>{{ message.temperature }}</span>

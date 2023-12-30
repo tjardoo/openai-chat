@@ -12,7 +12,6 @@ const chatStore = useChatStore()
 
 const models = ref<Array<String> | undefined>(undefined)
 const isFetchChats = ref<boolean>(false)
-const isFetchMessages = ref<boolean>(false)
 const isSidebarOpen = ref<boolean>(true)
 const receivedChunks = ref<string>('')
 
@@ -45,20 +44,8 @@ const fetchChats = () => {
 	}, 1000)
 }
 
-const fetchMessages = () => {
-	isFetchMessages.value = true
-
-	setTimeout(() => {
-		isFetchMessages.value = false
-	}, 1000)
-}
-
 const updateReceivedChunks = (value: string) => {
 	receivedChunks.value = value
-}
-
-const addMessage = (value: string) => {
-	// add event bus
 }
 
 const updateChatTitle = (title: string) => {
@@ -123,18 +110,13 @@ const toggleSidebar = (shouldOpen: boolean) => {
 				</div>
 
 				<div class="h-full overflow-y-auto">
-					<ListMessages
-						:is-fetching="isFetchMessages"
-						:receivedChunks="receivedChunks"
-					/>
+					<ListMessages :receivedChunks="receivedChunks" />
 				</div>
 
 				<div class="h-auto">
 					<StoreMessage
 						:models="models"
-						@message-sent="fetchMessages"
 						@update-received-chunks="updateReceivedChunks"
-						@add-message="addMessage"
 					/>
 				</div>
 			</div>

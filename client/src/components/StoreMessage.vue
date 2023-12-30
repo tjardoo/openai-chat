@@ -2,11 +2,13 @@
 import { computed, ref } from 'vue'
 import PaperAirplaneIcon from '@/components/Icons/PaperAirplaneIcon.vue'
 import ErrorMessage from '@/components/Forms/ErrorMessage.vue'
+import { useChatStore } from '@/stores/ChatStore'
+import { useMessagesStore } from '@/stores/MessagesStore'
 import type { FieldValidatorError } from '@/Models.vue'
 import type { TextareaHTMLAttributes } from 'vue'
-import { useChatStore } from '@/stores/ChatStore'
 
 const chatStore = useChatStore()
+const messagesStore = useMessagesStore()
 
 const props = defineProps({
 	models: {
@@ -16,7 +18,7 @@ const props = defineProps({
 	}
 })
 
-const emit = defineEmits(['updateReceivedChunks', 'addMessage'])
+const emit = defineEmits(['updateReceivedChunks'])
 
 const isLoading = ref<boolean>(false)
 const isError = ref<boolean>(false)
@@ -56,7 +58,10 @@ const sendMessage = (): void => {
 			temperature: temperature.value
 		})
 	}).then((response) => {
-		emit('addMessage', content.value)
+		if (content.value) {
+			messagesStore.addMessage(content.value.toString())
+		}
+
 		content.value = ''
 
 		if (response.body === null) {
