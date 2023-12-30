@@ -1,29 +1,14 @@
 <script setup lang="ts">
-import type { Chat } from '@/Models.vue'
-import { ref, watch } from 'vue'
+import { ref } from 'vue'
+import { useChatStore } from '@/stores/ChatStore'
 
-const props = defineProps({
-	selectedChat: {
-		type: Object as () => Chat | null,
-		default: null,
-	}
+const chatStore = useChatStore()
+
+const chatName = ref<string | null | undefined>()
+
+chatStore.$subscribe((mutation, state) => {
+	chatName.value = state.activeChat?.title ?? 'Chat X'
 })
-
-const chatName = ref<string | undefined>()
-
-watch(
-	() => props.selectedChat,
-	(first, second) => {
-		if (first === null) {
-			return
-		}
-
-		if (first !== second) {
-			chatName.value = first.title ?? 'Chat ' + first.id
-		}
-	},
-	{ immediate: true }
-)
 
 defineEmits(['updateChatTitle'])
 </script>

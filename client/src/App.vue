@@ -1,22 +1,20 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import ListChats from './components/ListChats.vue'
-import ListMessages from './components/ListMessages.vue'
-import StoreMessage from './components/StoreMessage.vue'
-import ShowChatTitle from './components/ShowChatTitle.vue'
-import ChevronRightIcon from './components/Icons/ChevronRightIcon.vue'
-import type { Chat } from './Models.vue'
+import { useChatStore } from '@/stores/ChatStore'
+import ListChats from '@/components/ListChats.vue'
+import ListMessages from '@/components/ListMessages.vue'
+import StoreMessage from '@/components/StoreMessage.vue'
+import ShowChatTitle from '@/components/ShowChatTitle.vue'
+import ChevronRightIcon from '@/components/Icons/ChevronRightIcon.vue'
+import type { Chat } from '@/Models.vue'
 
-const selectedChat = ref<Chat | null>(null)
+const chatStore = useChatStore()
+
 const models = ref<Array<String> | undefined>(undefined)
 const isFetchChats = ref<boolean>(false)
 const isFetchMessages = ref<boolean>(false)
 const isSidebarOpen = ref<boolean>(true)
 const receivedChunks = ref<string>('')
-
-const setSelectedChat = (chat: Chat) => {
-	selectedChat.value = chat
-}
 
 fetch(`http://localhost:3000/api/v1/models`, {
 	method: 'GET',
@@ -31,8 +29,8 @@ fetch(`http://localhost:3000/api/v1/models`, {
 const createChat = () => {
 	fetch(`http://localhost:3000/api/v1/chats`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': 'http://localhost:3000' } })
 		.then((response) => response.json())
-		.then((data: Chat) => {
-			selectedChat.value = data
+		.then((chat: Chat) => {
+			chatStore.setActiveChat(chat)
 
 			fetchChats()
 		})
@@ -56,22 +54,26 @@ const fetchMessages = () => {
 }
 
 const updateReceivedChunks = (value: string) => {
-    receivedChunks.value = value
+	receivedChunks.value = value
+}
+
+const addMessage = (value: string) => {
+	// add event bus
 }
 
 const updateChatTitle = (title: string) => {
-	if (selectedChat.value === null) {
+	if (chatStore.activeChat === null) {
 		return
 	}
 
-	fetch(`http://localhost:3000/api/v1/chats/${selectedChat.value.id}`, {
+	fetch(`http://localhost:3000/api/v1/chats/${chatStore.activeChat.id}`, {
 		method: 'PATCH',
 		headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': 'http://localhost:3000' },
 		body: JSON.stringify({ title: title })
 	})
 		.then((response) => response.json())
-		.then((data: Chat) => {
-			selectedChat.value = data
+		.then((chat: Chat) => {
+			chatStore.activeChat = chat
 
 			fetchChats()
 		})
@@ -94,9 +96,7 @@ const toggleSidebar = (shouldOpen: boolean) => {
 		>
 			<ListChats
 				:is-fetching="isFetchChats"
-				:selected-chat="selectedChat"
 				:is-sidebar-open="isSidebarOpen"
-				@selected-chat-changed="setSelectedChat"
 				@create-chat="createChat"
 				@toggle-sidebar="toggleSidebar"
 				v-if="isSidebarOpen"
@@ -115,30 +115,26 @@ const toggleSidebar = (shouldOpen: boolean) => {
 		</div>
 		<main class="w-full max-w-4xl px-4 mx-auto xl:px-0">
 			<div
-				v-if="selectedChat !== undefined"
+				v-if="chatStore.activeChat !== null"
 				class="flex flex-col h-screen"
 			>
 				<div class="my-6">
-					<ShowChatTitle
-						:selected-chat="selectedChat"
-						@update-chat-title="updateChatTitle"
-					/>
+					<ShowChatTitle @update-chat-title="updateChatTitle" />
 				</div>
 
 				<div class="h-full overflow-y-auto">
 					<ListMessages
-						:selected-chat="selectedChat"
 						:is-fetching="isFetchMessages"
-                        :receivedChunks="receivedChunks"
+						:receivedChunks="receivedChunks"
 					/>
 				</div>
 
 				<div class="h-auto">
 					<StoreMessage
-						:selected-chat="selectedChat"
 						:models="models"
 						@message-sent="fetchMessages"
-                        @update-received-chunks="updateReceivedChunks"
+						@update-received-chunks="updateReceivedChunks"
+						@add-message="addMessage"
 					/>
 				</div>
 			</div>

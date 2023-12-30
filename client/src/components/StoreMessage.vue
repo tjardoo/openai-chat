@@ -1,15 +1,14 @@
 <script setup lang="ts">
-import type { Chat, FieldValidatorError } from '@/Models.vue'
+import { computed, ref } from 'vue'
+import PaperAirplaneIcon from '@/components/Icons/PaperAirplaneIcon.vue'
+import ErrorMessage from '@/components/Forms/ErrorMessage.vue'
+import type { FieldValidatorError } from '@/Models.vue'
 import type { TextareaHTMLAttributes } from 'vue'
-import { computed, ref, watch } from 'vue'
-import PaperAirplaneIcon from './Icons/PaperAirplaneIcon.vue'
-import ErrorMessage from './Forms/ErrorMessage.vue'
+import { useChatStore } from '@/stores/ChatStore'
+
+const chatStore = useChatStore()
 
 const props = defineProps({
-	selectedChat: {
-		type: Object as () => Chat | null,
-		default: null,
-	},
 	models: {
 		type: Array as () => Array<String>,
 		default: [],
@@ -17,7 +16,7 @@ const props = defineProps({
 	}
 })
 
-const emit = defineEmits(['updateReceivedChunks'])
+const emit = defineEmits(['updateReceivedChunks', 'addMessage'])
 
 const isLoading = ref<boolean>(false)
 const isError = ref<boolean>(false)
@@ -28,7 +27,7 @@ const maxTokens = ref<number | string>('')
 const temperature = ref<number>(1)
 const receivedChunks = ref<string>('')
 
-const textDecoder = new TextDecoder('utf-8');
+const textDecoder = new TextDecoder('utf-8')
 
 const clearErrors = (): void => {
 	isError.value = false
@@ -37,18 +36,17 @@ const clearErrors = (): void => {
 }
 
 const streamCompleted = (): void => {
-    isLoading.value = false
+	isLoading.value = false
 }
 
-
 const sendMessage = (): void => {
-    if (props.selectedChat === null) {
-        return
-    }
+	if (chatStore.activeChat === null) {
+		return
+	}
 
 	isLoading.value = true
 
-	fetch(`http://localhost:3000/api/v1/chats/${props.selectedChat.id}/messages`, {
+	fetch(`http://localhost:3000/api/v1/chats/${chatStore.activeChat.id}/messages`, {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': 'http://localhost:3000' },
 		body: JSON.stringify({
@@ -57,46 +55,39 @@ const sendMessage = (): void => {
 			max_tokens: maxTokens.value,
 			temperature: temperature.value
 		})
-	})
-    .then((response) => {
-        if (response.body === null) {
-            return
-        }
+	}).then((response) => {
+		emit('addMessage', content.value)
+		content.value = ''
 
-        const reader = response.body.getReader()
-
-        reader.read().then(function processText({ done, value }): any {
-            if (done === true) {
-                streamCompleted()
-
-                return
-            }
-
-            receivedChunks.value += textDecoder.decode(value)
-
-            console.log("Incoming: " + receivedChunks.value)
-            emit('updateReceivedChunks', receivedChunks.value)
-
-            return reader.read().then(processText)
-        })
-    })
-}
-
-watch(
-	() => props.selectedChat,
-	(first, second) => {
-		if (first === null) {
+		if (response.body === null) {
 			return
 		}
 
-		clearErrors()
-		maxTokens.value = ''
-		temperature.value = 1
-		content.value = ''
-		// model.value = first.last_used_model
-	},
-	{ immediate: true }
-)
+		const reader = response.body.getReader()
+
+		reader.read().then(function processText({ done, value }): any {
+			if (done === true) {
+				streamCompleted()
+
+				return
+			}
+
+			receivedChunks.value += textDecoder.decode(value)
+
+			console.log('Incoming: ' + receivedChunks.value)
+			emit('updateReceivedChunks', receivedChunks.value)
+
+			return reader.read().then(processText)
+		})
+	})
+}
+
+chatStore.$subscribe((mutation, state) => {
+	clearErrors()
+	maxTokens.value = ''
+	temperature.value = 1
+	content.value = ''
+})
 
 const isSendButtonDisabled = computed((): boolean => {
 	return content.value === '' || isLoading.value === true || model.value === null
@@ -170,7 +161,7 @@ const getValidationError = (field: string): FieldValidatorError | null => {
 						}"
 					>
 						<template
-							v-for="model in models"
+							v-for="model in props.models"
 							:key="model"
 						>
 							<option :value="model">

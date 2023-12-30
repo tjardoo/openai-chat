@@ -1,37 +1,36 @@
 <script setup lang="ts">
-import type { Message, Chat } from '@/Models.vue'
 import { ref, watch } from 'vue'
 import hljs from 'highlight.js/lib/core'
 import { decode } from 'he'
+import { useChatStore } from '@/stores/ChatStore'
+import type { Message, Chat } from '@/Models.vue'
+
+const chatStore = useChatStore()
 
 const props = defineProps({
-	selectedChat: {
-		type: Object as () => Chat | null,
-		default: null,
-	},
 	isFetching: {
 		type: Boolean,
 		default: false,
 		required: false
 	},
-    receivedChunks: {
-        type: String,
-        default: '',
-        required: false
-    },
+	receivedChunks: {
+		type: String,
+		default: '',
+		required: false
+	}
 })
 
 const isLoading = ref<boolean>(false)
 const messages = ref<Array<Message>>([])
 
 const fetchMessages = () => {
-    if (props.selectedChat === null) {
-        return
-    }
+	if (chatStore.activeChat === null) {
+		return
+	}
 
 	isLoading.value = true
 
-	fetch(`http://localhost:3000/api/v1/chats/${props.selectedChat.id}/messages`, { method: 'GET', headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': 'http://localhost:3000' } })
+	fetch(`http://localhost:3000/api/v1/chats/${chatStore.activeChat.id}/messages`, { method: 'GET', headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': 'http://localhost:3000' } })
 		.then((response) => response.json())
 		.then((data: Array<Message>) => {
 			messages.value = data.reverse()
@@ -54,19 +53,9 @@ watch(
 	{ immediate: false }
 )
 
-watch(
-	() => props.selectedChat,
-	(first, second) => {
-		if (first === null) {
-			return
-		}
-
-		if (first !== second) {
-			fetchMessages()
-		}
-	},
-	{ immediate: true }
-)
+chatStore.$subscribe((mutation, state) => {
+	fetchMessages()
+})
 
 const hightlightCodeExamples = (message: string): string => {
 	const text = message.replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>')
@@ -119,8 +108,7 @@ const formatDateTime = (dateTime: string): string => {
 						'text-right bg-blue-600 text-white': message.role === 'user'
 					}"
 					v-html="hightlightCodeExamples(message.content)"
-				>
-                </div>
+				></div>
 				<div class="text-right">
 					<div class="text-[10px] text-gray-400 mt-1">
 						<span>{{ formatDateTime(message.created_at) }}</span>
@@ -135,16 +123,17 @@ const formatDateTime = (dateTime: string): string => {
 			</div>
 		</div>
 
-
-        <div class="flex justify-start mt-1 mb-3" v-if="receivedChunks">
-            <div class="flex flex-col">
-                <div
-                    class="flex-none px-3 py-1 font-light text-left text-gray-700 bg-gray-300 rounded-lg"
-                    v-html="hightlightCodeExamples(receivedChunks)"
-                >
-                </div>
-            </div>
-        </div>
+		<div
+			class="flex justify-start mt-1 mb-3"
+			v-if="receivedChunks"
+		>
+			<div class="flex flex-col">
+				<div
+					class="flex-none px-3 py-1 font-light text-left text-gray-700 bg-gray-300 rounded-lg"
+					v-html="hightlightCodeExamples(receivedChunks)"
+				></div>
+			</div>
+		</div>
 	</div>
 </template>
 

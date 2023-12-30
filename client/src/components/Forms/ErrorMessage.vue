@@ -4,7 +4,7 @@ import type { FieldValidatorError } from '../../Models.vue'
 const props = defineProps({
 	error: {
 		type: Object as () => FieldValidatorError | null,
-		default: null,
+		default: null
 	}
 })
 </script>

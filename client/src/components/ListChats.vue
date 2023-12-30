@@ -1,18 +1,17 @@
 <script setup lang="ts">
-import type { Chat } from '@/Models.vue'
 import { ref, watch } from 'vue'
-import StoreChatButton from './StoreChatButton.vue'
-import ChrevronLeftIcon from './Icons/ChevronLeftIcon.vue'
+import { useChatStore } from '@/stores/ChatStore'
+import StoreChatButton from '@/components/StoreChatButton.vue'
+import ChrevronLeftIcon from '@/components/Icons/ChevronLeftIcon.vue'
+import type { Chat } from '@/Models.vue'
+
+const chatStore = useChatStore()
 
 const props = defineProps({
 	isFetching: {
 		type: Boolean,
 		default: false,
 		required: false
-	},
-	selectedChat: {
-		type: Object as () => Chat | null,
-        default: null,
 	},
 	isSidebarOpen: {
 		type: Boolean,
@@ -35,7 +34,7 @@ watch(
 	{ immediate: true }
 )
 
-defineEmits(['selectedChatChanged', 'createChat', 'toggleSidebar'])
+defineEmits(['createChat', 'toggleSidebar'])
 </script>
 
 <template>
@@ -54,11 +53,11 @@ defineEmits(['selectedChatChanged', 'createChat', 'toggleSidebar'])
 			:key="chat.id"
 		>
 			<button
-				@click="$emit('selectedChatChanged', chat)"
+				@click="chatStore.setActiveChat(chat)"
 				class="w-full px-8 py-2 text-left text-white hover:bg-gray-600"
 				:class="{
-					'bg-gray-600': selectedChat?.id === chat.id,
-					'bg-gray-800': selectedChat?.id !== chat.id
+					'bg-gray-600': chatStore.activeChat?.id === chat.id,
+					'bg-gray-800': chatStore.activeChat?.id !== chat.id
 				}"
 			>
 				{{ chat.title ?? 'Chat ' + chat.id }}
