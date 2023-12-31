@@ -86,7 +86,7 @@ pub async fn store(
     State(state): State<Arc<AppState>>,
     ValidatedJson(request): ValidatedJson<StoreMessageRequest>,
 ) -> impl IntoResponse {
-    let _last_inserted_id = sqlx::query_as!(
+    sqlx::query_as!(
         Message,
         "INSERT INTO messages (chat_id, role, content) VALUES (?, ?, ?)",
         chat_id,
@@ -98,14 +98,20 @@ pub async fn store(
     .unwrap()
     .last_insert_id();
 
+    let model = request.model;
+
     let api_key = env::var("OPENAI_API_KEY").expect("$OPENAI_API_KEY is not set");
 
     let messages = get_messages_by_chat_id(&state.pool, chat_id).await.unwrap();
 
     let messages: Vec<ChatMessage> = messages.into_iter().map(ChatMessage::from).collect();
 
+    update_last_used_model(&state.pool, chat_id, &model)
+        .await
+        .unwrap();
+
     let parameters = ChatCompletionParameters {
-        model: request.model,
+        model,
         messages,
         ..Default::default()
     };
@@ -153,4 +159,20 @@ pub async fn store_assistant_message(
     .unwrap();
 
     Ok((StatusCode::CREATED, Json(message)))
+}
+
+async fn update_last_used_model(
+    pool: &sqlx::MySqlPool,
+    chat_id: u32,
+    model: &str,
+) -> Result<(), sqlx::Error> {
+    sqlx::query!(
+        "UPDATE chats SET last_used_model = ? WHERE id = ?",
+        model,
+        chat_id
+    )
+    .execute(pool)
+    .await?;
+
+    Ok(())
 }
