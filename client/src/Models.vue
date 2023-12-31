@@ -11,7 +11,6 @@ export interface Message {
 	id: number
 	role: string
 	content: string
-	temperature: number
 	created_at: string
 }
 

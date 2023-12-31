@@ -13,11 +13,6 @@ pub struct Message {
     pub chat_id: u32,
     pub role: Role,
     pub content: String,
-    pub used_model: String,
-    pub prompt_tokens: Option<u32>,
-    pub completion_tokens: Option<u32>,
-    #[validate(range(min = 0.0, max = 2.0))]
-    pub temperature: Option<f32>,
     pub created_at: DateTime<Utc>,
 }
 

@@ -23,8 +23,6 @@ const isError = ref<boolean>(false)
 const validationErrors = ref<Array<FieldValidatorError> | null>(null)
 const content = ref<TextareaHTMLAttributes['value']>('')
 const model = ref<string>('gpt-4-0613')
-const maxTokens = ref<number | string>('')
-const temperature = ref<number>(1)
 
 const textDecoder = new TextDecoder('utf-8')
 
@@ -70,8 +68,6 @@ const sendMessage = (): void => {
 		body: JSON.stringify({
 			content: content.value,
 			model: model.value,
-			max_tokens: maxTokens.value,
-			temperature: temperature.value
 		})
 	}).then((response) => {
 		if (content.value) {
@@ -79,7 +75,6 @@ const sendMessage = (): void => {
                 id: 0,
                 role: 'user',
                 content: content.value.toString(),
-                temperature: 1,
                 created_at: new Date().toISOString(),
             })
 		}
@@ -115,8 +110,6 @@ const sendMessage = (): void => {
 chatStore.$subscribe((mutation, state) => {
 	clearErrors()
 
-	maxTokens.value = ''
-	temperature.value = 1
 	content.value = ''
 })
 
@@ -201,49 +194,6 @@ const getValidationError = (field: string): FieldValidatorError | null => {
 						</template>
 					</select>
 					<ErrorMessage :error="getValidationError('model')" />
-				</div>
-
-				<div class="hidden w-full space-x-2 xl:flex">
-					<div class="w-1/2">
-						<label
-							for="max_tokens"
-							class="text-gray-500 text-[10px]"
-						>
-							Max. tokens
-						</label>
-						<input
-							type="text"
-							id="max_tokens"
-							v-model="maxTokens"
-							class="w-full px-4 py-2 text-gray-700 border border-gray-300 rounded-lg"
-							:class="{
-								'border-red-500': isFieldInvalid('max_tokens')
-							}"
-						/>
-						<ErrorMessage :error="getValidationError('max_tokens')" />
-					</div>
-
-					<div class="w-1/2">
-						<label
-							for="temperature"
-							class="text-gray-500 text-[10px]"
-						>
-							Temperature
-						</label>
-						<input
-							type="number"
-							id="temperature"
-							v-model="temperature"
-							class="w-full px-4 py-2 text-gray-700 border border-gray-300 rounded-lg"
-							:class="{
-								'border-red-500': isFieldInvalid('temperature')
-							}"
-							min="0"
-							max="2"
-							step="0.1"
-						/>
-						<ErrorMessage :error="getValidationError('temperature')" />
-					</div>
 				</div>
 			</div>
 		</div>

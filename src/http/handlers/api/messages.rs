@@ -35,10 +35,6 @@ pub async fn index(
             chat_id,
             role AS \"role: Role\",
             content,
-            used_model,
-            prompt_tokens AS \"prompt_tokens: u32\",
-            completion_tokens AS \"completion_tokens: u32\",
-            temperature AS \"temperature: f32\",
             created_at
         FROM
             messages
@@ -90,15 +86,12 @@ pub async fn store(
     State(state): State<Arc<AppState>>,
     ValidatedJson(request): ValidatedJson<StoreMessageRequest>,
 ) -> impl IntoResponse {
-    let model = request.model;
-
     let _last_inserted_id = sqlx::query_as!(
         Message,
-        "INSERT INTO messages (chat_id, role, content, used_model) VALUES (?, ?, ?, ?)",
+        "INSERT INTO messages (chat_id, role, content) VALUES (?, ?, ?)",
         chat_id,
-        "user".to_string(),
+        "user",
         request.content,
-        model
     )
     .execute(&state.pool)
     .await
@@ -112,10 +105,8 @@ pub async fn store(
     let messages: Vec<ChatMessage> = messages.into_iter().map(ChatMessage::from).collect();
 
     let parameters = ChatCompletionParameters {
-        model,
+        model: request.model,
         messages,
-        max_tokens: request.max_tokens,
-        temperature: request.temperature,
         ..Default::default()
     };
 
@@ -133,11 +124,10 @@ pub async fn store_assistant_message(
 ) -> Result<(StatusCode, Json<Message>), (StatusCode, Json<JsonError>)> {
     let last_inserted_id = sqlx::query_as!(
         Message,
-        "INSERT INTO messages (chat_id, role, content, used_model) VALUES (?, ?, ?, ?)",
+        "INSERT INTO messages (chat_id, role, content) VALUES (?, ?, ?)",
         chat_id,
-        "assistant".to_string(),
+        "assistant",
         request.content,
-        "".to_string(),
     )
     .execute(&state.pool)
     .await
@@ -151,10 +141,6 @@ pub async fn store_assistant_message(
             chat_id,
             role AS \"role: Role\",
             content,
-            used_model,
-            prompt_tokens AS \"prompt_tokens: u32\",
-            completion_tokens AS \"completion_tokens: u32\",
-            temperature AS \"temperature: f32\",
             created_at
         FROM
             messages

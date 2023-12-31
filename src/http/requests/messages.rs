@@ -11,12 +11,6 @@ pub struct StoreMessageRequest {
     #[validate(length(min = 2, max = 2500))]
     pub content: String,
     pub model: String,
-    #[validate(range(min = 0, max = 10000))]
-    #[serde(default, deserialize_with = "deserialize_with_nan")]
-    pub max_tokens: Option<u32>,
-    #[validate(range(min = 0.0, max = 2.0))]
-    #[serde(default, deserialize_with = "deserialize_with_nan")]
-    pub temperature: Option<f32>,
 }
 
 #[derive(Deserialize, Validate, Debug)]
@@ -25,6 +19,7 @@ pub struct StoreAssistantMessageRequest {
     pub content: String,
 }
 
+#[allow(dead_code)]
 fn deserialize_with_nan<'de, T, D>(deserializer: D) -> Result<Option<T>, D::Error>
 where
     T: FromStr + Deserialize<'de> + Debug,

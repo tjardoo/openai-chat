@@ -21,7 +21,9 @@ chatStore.$subscribe((mutation, state) => {
 	fetch(`http://localhost:3000/api/v1/chats/${chatStore.activeChat.id}/messages`, { method: 'GET', headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': 'http://localhost:3000' } })
 		.then((response) => response.json())
 		.then((messages: Array<Message>) => {
-			messagesStore.setMessages(messages.reverse())
+            const reversedMessages = messages.reverse()
+
+			messagesStore.setMessages(reversedMessages)
 			isLoading.value = false
 		})
 		.catch((err) => console.log(err))
@@ -59,7 +61,17 @@ const formatDateTime = (dateTime: string): string => {
 		class="px-2 overflow-y-auto min-h-[480px]"
 		id="messages"
 	>
-		<div v-if="isLoading">Loading...</div>
+        <div
+			class="flex justify-start mt-1 mb-3"
+			v-if="messagesStore.streamingMessage"
+		>
+			<div class="flex flex-col">
+				<div
+					class="flex-none px-3 py-1 font-light text-left text-gray-700 bg-gray-300 rounded-lg"
+					v-html="hightlightCodeExamples(messagesStore.streamingMessage)"
+				></div>
+			</div>
+		</div>
 
 		<div
 			v-for="message in messagesStore.messages"
@@ -82,27 +94,12 @@ const formatDateTime = (dateTime: string): string => {
 				<div class="text-right">
 					<div class="text-[10px] text-gray-400 mt-1">
 						<span>{{ formatDateTime(message.created_at) }}</span>
-						&bull;
-						<template v-if="message.temperature">
-							&bull;
-							<span>{{ message.temperature }}</span>
-						</template>
 					</div>
 				</div>
 			</div>
 		</div>
 
-		<div
-			class="flex justify-start mt-1 mb-3"
-			v-if="messagesStore.streamingMessage"
-		>
-			<div class="flex flex-col">
-				<div
-					class="flex-none px-3 py-1 font-light text-left text-gray-700 bg-gray-300 rounded-lg"
-					v-html="hightlightCodeExamples(messagesStore.streamingMessage)"
-				></div>
-			</div>
-		</div>
+		<div v-if="isLoading">Loading...</div>
 	</div>
 </template>
 
