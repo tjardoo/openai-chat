@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref } from 'vue'
 import { useChatStore } from '@/stores/ChatStore'
 import StoreChatButton from '@/components/StoreChatButton.vue'
 import ChrevronLeftIcon from '@/components/Icons/ChevronLeftIcon.vue'
@@ -7,32 +7,20 @@ import type { Chat } from '@/Models.vue'
 
 const chatStore = useChatStore()
 
-const props = defineProps({
-	isFetching: {
-		type: Boolean,
-		default: false,
-		required: false
-	},
-	isSidebarOpen: {
-		type: Boolean,
-		required: true
-	}
-})
-
 let chats = ref<Array<Chat>>([])
 
-watch(
-	() => props.isFetching,
-	(first, second) => {
-		if (first !== second) {
-			fetch(`http://localhost:3000/api/v1/chats`, { method: 'GET', headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': 'http://localhost:3000' } })
-				.then((response) => response.json())
-				.then((data: Array<Chat>) => (chats.value = data))
-				.catch((err) => console.log(err))
-		}
-	},
-	{ immediate: true }
-)
+chatStore.$subscribe((mutation, state) => {
+    fetch(`http://localhost:3000/api/v1/chats`, { method: 'GET', headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': 'http://localhost:3000' } })
+        .then((response) => response.json())
+        .then((data: Array<Chat>) => (chats.value = data))
+        .catch((err) => console.log(err))
+})
+
+// upon first load, fetch chats
+fetch(`http://localhost:3000/api/v1/chats`, { method: 'GET', headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': 'http://localhost:3000' } })
+    .then((response) => response.json())
+    .then((data: Array<Chat>) => (chats.value = data))
+    .catch((err) => console.log(err))
 
 defineEmits(['createChat', 'toggleSidebar'])
 </script>

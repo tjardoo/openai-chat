@@ -4,7 +4,7 @@ import PaperAirplaneIcon from '@/components/Icons/PaperAirplaneIcon.vue'
 import ErrorMessage from '@/components/Forms/ErrorMessage.vue'
 import { useChatStore } from '@/stores/ChatStore'
 import { useMessagesStore } from '@/stores/MessagesStore'
-import type { FieldValidatorError } from '@/Models.vue'
+import type { FieldValidatorError, Message } from '@/Models.vue'
 import type { TextareaHTMLAttributes } from 'vue'
 
 const chatStore = useChatStore()
@@ -18,8 +18,6 @@ const props = defineProps({
 	}
 })
 
-const emit = defineEmits(['updateReceivedChunks'])
-
 const isLoading = ref<boolean>(false)
 const isError = ref<boolean>(false)
 const validationErrors = ref<Array<FieldValidatorError> | null>(null)
@@ -27,7 +25,6 @@ const content = ref<TextareaHTMLAttributes['value']>('')
 const model = ref<string>('gpt-4-0613')
 const maxTokens = ref<number | string>('')
 const temperature = ref<number>(1)
-const receivedChunks = ref<string>('')
 
 const textDecoder = new TextDecoder('utf-8')
 
@@ -39,6 +36,25 @@ const clearErrors = (): void => {
 
 const streamCompleted = (): void => {
 	isLoading.value = false
+
+    if (chatStore.activeChat === null) {
+        return
+    }
+
+    fetch(`http://localhost:3000/api/v1/chats/${chatStore.activeChat.id}/messages/assistant`, {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': 'http://localhost:3000' },
+		body: JSON.stringify({
+			content: messagesStore.streamingMessage,
+		})
+    })
+    .then((response) => response.json())
+    .then((message: Message) => {
+        messagesStore.addMessage(message)
+
+        messagesStore.clearStreamingMessage()
+    })
+    .catch((err) => console.log(err))
 }
 
 const sendMessage = (): void => {
@@ -59,7 +75,13 @@ const sendMessage = (): void => {
 		})
 	}).then((response) => {
 		if (content.value) {
-			messagesStore.addMessage(content.value.toString())
+			messagesStore.addMessage({
+                id: 0,
+                role: 'user',
+                content: content.value.toString(),
+                temperature: 1,
+                created_at: new Date().toISOString(),
+            })
 		}
 
 		content.value = ''
@@ -67,6 +89,8 @@ const sendMessage = (): void => {
 		if (response.body === null) {
 			return
 		}
+
+        let receivedChunks = ''
 
 		const reader = response.body.getReader()
 
@@ -77,10 +101,11 @@ const sendMessage = (): void => {
 				return
 			}
 
-			receivedChunks.value += textDecoder.decode(value)
+			receivedChunks += textDecoder.decode(value)
 
-			console.log('Incoming: ' + receivedChunks.value)
-			emit('updateReceivedChunks', receivedChunks.value)
+			console.log('Incoming: ' + receivedChunks)
+
+            messagesStore.streamMessage(receivedChunks)
 
 			return reader.read().then(processText)
 		})
@@ -89,6 +114,7 @@ const sendMessage = (): void => {
 
 chatStore.$subscribe((mutation, state) => {
 	clearErrors()
+
 	maxTokens.value = ''
 	temperature.value = 1
 	content.value = ''

@@ -19,6 +19,12 @@ pub struct StoreMessageRequest {
     pub temperature: Option<f32>,
 }
 
+#[derive(Deserialize, Validate, Debug)]
+pub struct StoreAssistantMessageRequest {
+    #[validate(length(min = 2, max = 2500))]
+    pub content: String,
+}
+
 fn deserialize_with_nan<'de, T, D>(deserializer: D) -> Result<Option<T>, D::Error>
 where
     T: FromStr + Deserialize<'de> + Debug,

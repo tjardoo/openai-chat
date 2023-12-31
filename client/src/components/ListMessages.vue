@@ -9,19 +9,6 @@ import type { Message } from '@/Models.vue'
 const chatStore = useChatStore()
 const messagesStore = useMessagesStore()
 
-const props = defineProps({
-	isFetching: {
-		type: Boolean,
-		default: false,
-		required: false
-	},
-	receivedChunks: {
-		type: String,
-		default: '',
-		required: false
-	}
-})
-
 const isLoading = ref<boolean>(false)
 
 chatStore.$subscribe((mutation, state) => {
@@ -107,12 +94,12 @@ const formatDateTime = (dateTime: string): string => {
 
 		<div
 			class="flex justify-start mt-1 mb-3"
-			v-if="receivedChunks"
+			v-if="messagesStore.streamingMessage"
 		>
 			<div class="flex flex-col">
 				<div
 					class="flex-none px-3 py-1 font-light text-left text-gray-700 bg-gray-300 rounded-lg"
-					v-html="hightlightCodeExamples(receivedChunks)"
+					v-html="hightlightCodeExamples(messagesStore.streamingMessage)"
 				></div>
 			</div>
 		</div>

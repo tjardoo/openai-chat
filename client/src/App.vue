@@ -11,9 +11,7 @@ import type { Chat } from '@/Models.vue'
 const chatStore = useChatStore()
 
 const models = ref<Array<String> | undefined>(undefined)
-const isFetchChats = ref<boolean>(false)
 const isSidebarOpen = ref<boolean>(true)
-const receivedChunks = ref<string>('')
 
 fetch(`http://localhost:3000/api/v1/models`, {
 	method: 'GET',
@@ -31,21 +29,9 @@ const createChat = () => {
 		.then((chat: Chat) => {
 			chatStore.setActiveChat(chat)
 
-			fetchChats()
+
 		})
 		.catch((err) => console.log(err))
-}
-
-const fetchChats = () => {
-	isFetchChats.value = true
-
-	setTimeout(() => {
-		isFetchChats.value = false
-	}, 1000)
-}
-
-const updateReceivedChunks = (value: string) => {
-	receivedChunks.value = value
 }
 
 const updateChatTitle = (title: string) => {
@@ -61,8 +47,6 @@ const updateChatTitle = (title: string) => {
 		.then((response) => response.json())
 		.then((chat: Chat) => {
 			chatStore.activeChat = chat
-
-			fetchChats()
 		})
 		.catch((err) => console.log(err))
 }
@@ -82,7 +66,6 @@ const toggleSidebar = (shouldOpen: boolean) => {
 			}"
 		>
 			<ListChats
-				:is-fetching="isFetchChats"
 				:is-sidebar-open="isSidebarOpen"
 				@create-chat="createChat"
 				@toggle-sidebar="toggleSidebar"
@@ -110,13 +93,12 @@ const toggleSidebar = (shouldOpen: boolean) => {
 				</div>
 
 				<div class="h-full overflow-y-auto">
-					<ListMessages :receivedChunks="receivedChunks" />
+					<ListMessages />
 				</div>
 
 				<div class="h-auto">
 					<StoreMessage
 						:models="models"
-						@update-received-chunks="updateReceivedChunks"
 					/>
 				</div>
 			</div>

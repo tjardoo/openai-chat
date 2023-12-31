@@ -12,23 +12,16 @@ export const useMessagesStore = defineStore('messagesStore', {
 		setMessages(messages: Message[]) {
 			this.messages = messages
 
-			this.streamingMessage = null
+			this.clearStreamingMessage()
 		},
-		addMessage(content: string) {
-			this.messages.push({
-				id: 0,
-				role: 'user',
-				content: content,
-				temperature: 1,
-				created_at: new Date().toISOString()
-			})
+		addMessage(message: Message) {
+			this.messages.unshift(message)
 		},
 		streamMessage(chunk: string) {
-			if (this.streamingMessage === null) {
-				this.streamingMessage = chunk
-			} else {
-				this.streamingMessage += chunk
-			}
-		}
+		    this.streamingMessage = chunk
+		},
+        clearStreamingMessage() {
+            this.streamingMessage = null
+        }
 	}
 })
