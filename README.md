@@ -2,11 +2,9 @@
 
 ## Introduction
 
-OpenAI Chat is a web application that allows you to interact with the [OpenAI API](https://beta.openai.com/). The application is build in [Rust](https://www.rust-lang.org/) and [Vue](https://vuejs.org/). The chat history is stored in a [MySQL](https://www.mysql.com/) database.
+OpenAI Chat is a web app that allows you to interact with the [OpenAI API](https://beta.openai.com/). The application is build in [Rust](https://www.rust-lang.org/) and [Vue](https://vuejs.org/). The chat history is stored in a [MySQL](https://www.mysql.com/) database.
 
-You can easily start a new chat or continue an existing chat via the links in the sidebar. You can choose the engine (model) for each chat individually. When a code snippet is detected, it will automatically be highlighted using [Highlight.js](https://highlightjs.org/).
-
-Each new message will contain all previous messages of the chat - therefore the tokens used increases each time you send a new message. This is visible on the right-side of the timestamp below the message.
+You can easily start a new chat or continue an existing chat via the links in the sidebar. When a code snippet is detected, it will automatically be highlighted using [Highlight.js](https://highlightjs.org/). When enabled, it will automatically summarize the first message and use that as title for the chat.
 
 ![Screenshot](docs/screenshot.png)
 
@@ -41,6 +39,10 @@ cd client && npm install
 
 Copy `.env.example` to `.env` and update the environment variables.
 
+The `OPENAI_API_KEY` is required to use the OpenAI API. You can get your API key [https://beta.openai.com/account/api-keys](https://beta.openai.com/account/api-keys).
+
+The `OPENAI_CHAT_SUMMARY_ENABLED` is used to decide, whether to automatically summarize the first message and use that as title for the chat.
+
 ## Usage
 
 ### Production
@@ -52,6 +54,8 @@ cargo run
 ```
 
 And visit [http://localhost:3000](http://localhost:3000).
+
+You can configure the URL and port in `.env`.
 
 ### Development
 

@@ -7,6 +7,7 @@ use tower_http::{cors::Any, normalize_path::NormalizePathLayer};
 use tracing::info;
 
 pub mod database;
+pub mod db;
 pub mod dive;
 pub mod http;
 pub mod logging;

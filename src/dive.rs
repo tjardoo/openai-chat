@@ -1,12 +1,40 @@
-use futures::StreamExt;
+use futures::{stream, Stream};
 use openai_dive::v1::{
     api::Client,
     resources::chat::{ChatCompletionParameters, ChatMessage},
 };
+use openai_dive::v1::{error::APIError, resources::chat::ChatCompletionChunkResponse};
 use sqlx::{MySql, Pool};
+use std::pin::Pin;
 use std::{env, error::Error};
+use tokio_stream::StreamExt;
 
-use crate::models::message::{Message, Role};
+use crate::db::chat::{add_message_to_chat, get_messages_by_chat_id};
+
+type OpenAIStream =
+    Pin<Box<dyn Stream<Item = Result<ChatCompletionChunkResponse, APIError>> + std::marker::Send>>;
+
+pub fn source_openai_stream(stream: OpenAIStream) -> impl Stream<Item = String> {
+    stream::unfold(stream, |mut s| async {
+        match s.next().await {
+            Some(Ok(chat_response)) => {
+                let content = chat_response
+                    .choices
+                    .iter()
+                    .filter_map(|choice| choice.delta.content.clone())
+                    .collect::<Vec<String>>()
+                    .join("");
+
+                Some((content, s))
+            }
+            Some(Err(e)) => {
+                eprintln!("{}", e);
+                None
+            }
+            None => None,
+        }
+    })
+}
 
 pub async fn send_message(
     pool: &Pool<MySql>,
@@ -47,46 +75,4 @@ pub async fn send_message(
     add_message_to_chat(&pool, chat_id, &message).await?;
 
     Ok(message)
-}
-
-pub async fn get_messages_by_chat_id(
-    pool: &Pool<MySql>,
-    chat_id: u32,
-) -> Result<Vec<Message>, Box<dyn Error>> {
-    let messages = sqlx::query_as!(
-        Message,
-        "SELECT
-            id,
-            chat_id,
-            role AS \"role: Role\",
-            content,
-            created_at
-        FROM
-            messages
-        WHERE
-            chat_id = ?",
-        chat_id
-    )
-    .fetch_all(pool)
-    .await?;
-
-    Ok(messages)
-}
-
-async fn add_message_to_chat(
-    pool: &Pool<MySql>,
-    chat_id: u32,
-    message: &str,
-) -> Result<(), Box<dyn Error>> {
-    sqlx::query_as!(
-        Message,
-        "INSERT INTO messages (chat_id, role, content) VALUES (?, ?, ?)",
-        chat_id,
-        "assistant".to_string(),
-        message,
-    )
-    .execute(pool)
-    .await?;
-
-    Ok(())
 }

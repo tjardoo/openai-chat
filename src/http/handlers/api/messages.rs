@@ -5,18 +5,15 @@ use axum::{
     Json,
 };
 use axum_streams::StreamBodyAs;
-use futures::{stream, Stream};
 use openai_dive::v1::{
     api::Client,
-    error::APIError,
-    resources::chat::{ChatCompletionChunkResponse, ChatCompletionParameters, ChatMessage},
+    resources::chat::{ChatCompletionParameters, ChatMessage},
 };
-use sqlx::MySqlPool;
-use std::{env, pin::Pin, sync::Arc};
-use tokio_stream::StreamExt;
+use std::{env, sync::Arc};
 
 use crate::{
-    dive::get_messages_by_chat_id,
+    db::chat::{get_messages_by_chat_id, update_chat_last_used_model, update_chat_title},
+    dive::source_openai_stream,
     http::{
         requests::messages::{StoreAssistantMessageRequest, StoreMessageRequest},
         validation::ValidatedJson,
@@ -57,31 +54,6 @@ pub async fn index(
     }
 }
 
-type OpenAIStream =
-    Pin<Box<dyn Stream<Item = Result<ChatCompletionChunkResponse, APIError>> + std::marker::Send>>;
-
-fn source_openai_stream(stream: OpenAIStream) -> impl Stream<Item = String> {
-    stream::unfold(stream, |mut s| async {
-        match s.next().await {
-            Some(Ok(chat_response)) => {
-                let content = chat_response
-                    .choices
-                    .iter()
-                    .filter_map(|choice| choice.delta.content.clone())
-                    .collect::<Vec<String>>()
-                    .join("");
-
-                Some((content, s))
-            }
-            Some(Err(e)) => {
-                eprintln!("{}", e);
-                None
-            }
-            None => None,
-        }
-    })
-}
-
 pub async fn store(
     Path(chat_id): Path<u32>,
     State(state): State<Arc<AppState>>,
@@ -109,7 +81,7 @@ pub async fn store(
 
     let messages: Vec<ChatMessage> = messages.into_iter().map(ChatMessage::from).collect();
 
-    update_last_used_model(&state.pool, chat_id, &model)
+    update_chat_last_used_model(&state.pool, chat_id, &model)
         .await
         .unwrap();
 
@@ -162,69 +134,4 @@ pub async fn store_assistant_message(
     .unwrap();
 
     Ok((StatusCode::CREATED, Json(message)))
-}
-
-async fn update_last_used_model(
-    pool: &sqlx::MySqlPool,
-    chat_id: u32,
-    model: &str,
-) -> Result<(), sqlx::Error> {
-    sqlx::query!(
-        "UPDATE chats SET last_used_model = ? WHERE id = ?",
-        model,
-        chat_id
-    )
-    .execute(pool)
-    .await?;
-
-    Ok(())
-}
-
-async fn update_chat_title(pool: &MySqlPool, chat_id: u32, model: &str) {
-    let openai_chat_summary_enabled =
-        env::var("OPENAI_CHAT_SUMMARY_ENABLED").expect("$OPENAI_CHAT_SUMMARY_ENABLED is not set");
-
-    if openai_chat_summary_enabled != "true" {
-        return;
-    }
-
-    let messages = get_messages_by_chat_id(pool, chat_id).await.unwrap();
-
-    if messages.len() != 1 {
-        return;
-    }
-
-    let mut messages: Vec<ChatMessage> = messages.into_iter().map(ChatMessage::from).collect();
-    messages.push(ChatMessage {
-        content: Some("Summarize/Explain the first message. Limit to 40 characters.".to_string()),
-        ..Default::default()
-    });
-
-    let parameters = ChatCompletionParameters {
-        model: model.to_string(),
-        messages,
-        ..Default::default()
-    };
-
-    let api_key = env::var("OPENAI_API_KEY").expect("$OPENAI_API_KEY is not set");
-
-    let client = Client::new(api_key);
-
-    let chat_completion_response = client.chat().create(parameters).await.unwrap();
-
-    let new_title = chat_completion_response
-        .choices
-        .iter()
-        .filter_map(|choice| choice.message.content.clone())
-        .collect::<Vec<String>>()
-        .join("");
-
-    sqlx::query!(
-        "UPDATE chats SET title = ? WHERE id = ?",
-        new_title,
-        chat_id
-    )
-    .execute(pool)
-    .await
-    .unwrap();
 }
