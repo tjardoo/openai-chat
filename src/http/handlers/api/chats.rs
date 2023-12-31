@@ -41,11 +41,19 @@ pub async fn index(
 pub async fn store(
     State(state): State<Arc<AppState>>,
 ) -> Result<(StatusCode, Json<Chat>), (StatusCode, Json<JsonError>)> {
-    let last_inserted_id = sqlx::query_as!(Chat, "INSERT INTO chats (created_at) VALUES (NOW())")
-        .execute(&state.pool)
+    let number_of_chats: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM chats")
+        .fetch_one(&state.pool)
         .await
-        .unwrap()
-        .last_insert_id();
+        .unwrap();
+
+    let chat_name = format!("Chat {}", number_of_chats + 1);
+
+    let last_inserted_id =
+        sqlx::query_as!(Chat, "INSERT INTO chats (title) VALUES (?)", chat_name,)
+            .execute(&state.pool)
+            .await
+            .unwrap()
+            .last_insert_id();
 
     match sqlx::query_as!(
         Chat,

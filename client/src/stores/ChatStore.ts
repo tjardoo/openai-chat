@@ -10,6 +10,11 @@ export const useChatStore = defineStore('chatStore', {
 	actions: {
 		setActiveChat(chat: Chat) {
 			this.activeChat = chat
-		}
+		},
+        updateActiveChatTitle(title: string) {
+            if (this.activeChat) {
+                this.activeChat.title = title
+            }
+        }
 	}
 })

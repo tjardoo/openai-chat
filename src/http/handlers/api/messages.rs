@@ -11,6 +11,7 @@ use openai_dive::v1::{
     error::APIError,
     resources::chat::{ChatCompletionChunkResponse, ChatCompletionParameters, ChatMessage},
 };
+use sqlx::MySqlPool;
 use std::{env, pin::Pin, sync::Arc};
 use tokio_stream::StreamExt;
 
@@ -100,6 +101,8 @@ pub async fn store(
 
     let model = request.model;
 
+    update_chat_title(&state.pool, chat_id, &model).await;
+
     let api_key = env::var("OPENAI_API_KEY").expect("$OPENAI_API_KEY is not set");
 
     let messages = get_messages_by_chat_id(&state.pool, chat_id).await.unwrap();
@@ -175,4 +178,53 @@ async fn update_last_used_model(
     .await?;
 
     Ok(())
+}
+
+async fn update_chat_title(pool: &MySqlPool, chat_id: u32, model: &str) {
+    let openai_chat_summary_enabled =
+        env::var("OPENAI_CHAT_SUMMARY_ENABLED").expect("$OPENAI_CHAT_SUMMARY_ENABLED is not set");
+
+    if openai_chat_summary_enabled != "true" {
+        return;
+    }
+
+    let messages = get_messages_by_chat_id(pool, chat_id).await.unwrap();
+
+    if messages.len() != 1 {
+        return;
+    }
+
+    let mut messages: Vec<ChatMessage> = messages.into_iter().map(ChatMessage::from).collect();
+    messages.push(ChatMessage {
+        content: Some("Summarize/Explain the first message. Limit to 40 characters.".to_string()),
+        ..Default::default()
+    });
+
+    let parameters = ChatCompletionParameters {
+        model: model.to_string(),
+        messages,
+        ..Default::default()
+    };
+
+    let api_key = env::var("OPENAI_API_KEY").expect("$OPENAI_API_KEY is not set");
+
+    let client = Client::new(api_key);
+
+    let chat_completion_response = client.chat().create(parameters).await.unwrap();
+
+    let new_title = chat_completion_response
+        .choices
+        .iter()
+        .filter_map(|choice| choice.message.content.clone())
+        .collect::<Vec<String>>()
+        .join("");
+
+    sqlx::query!(
+        "UPDATE chats SET title = ? WHERE id = ?",
+        new_title,
+        chat_id
+    )
+    .execute(pool)
+    .await
+    .unwrap();
 }

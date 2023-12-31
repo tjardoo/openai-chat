@@ -4,7 +4,7 @@ import PaperAirplaneIcon from '@/components/Icons/PaperAirplaneIcon.vue'
 import ErrorMessage from '@/components/Forms/ErrorMessage.vue'
 import { useChatStore } from '@/stores/ChatStore'
 import { useMessagesStore } from '@/stores/MessagesStore'
-import type { FieldValidatorError, Message } from '@/Models.vue'
+import type { Chat, FieldValidatorError, Message } from '@/Models.vue'
 import type { TextareaHTMLAttributes } from 'vue'
 
 const chatStore = useChatStore()
@@ -37,6 +37,13 @@ const streamCompleted = (): void => {
 
     if (chatStore.activeChat === null) {
         return
+    }
+
+    if (messagesStore.messages.length === 1) {
+        fetch(`http://localhost:3000/api/v1/chats/${chatStore.activeChat.id}`, { method: 'GET', headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': 'http://localhost:3000' } })
+            .then((response) => response.json())
+            .then((chat: Chat) => chatStore.updateActiveChatTitle(chat.title ?? 'Untitled'))
+            .catch((err) => console.log(err))
     }
 
     fetch(`http://localhost:3000/api/v1/chats/${chatStore.activeChat.id}/messages/assistant`, {
