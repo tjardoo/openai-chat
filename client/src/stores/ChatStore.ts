@@ -9,6 +9,7 @@ export const useChatStore = defineStore('chatStore', {
 	},
 	actions: {
 		setActiveChat(chat: Chat) {
+            // @todo when null, it needs to triggers for the other components to update
 			this.activeChat = chat
 		},
         updateActiveChatTitle(title: string) {

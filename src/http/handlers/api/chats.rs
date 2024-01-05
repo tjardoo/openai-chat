@@ -154,3 +154,15 @@ pub async fn update(
         )),
     }
 }
+
+pub async fn delete(
+    Path(id): Path<u32>,
+    State(state): State<Arc<AppState>>,
+) -> Result<(StatusCode, String), (StatusCode, Json<JsonError>)> {
+    sqlx::query_as!(Chat, "DELETE FROM chats WHERE id = ?", id)
+        .execute(&state.pool)
+        .await
+        .unwrap();
+
+    Ok((StatusCode::NO_CONTENT, "".to_string()))
+}

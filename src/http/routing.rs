@@ -1,5 +1,5 @@
 use axum::http::StatusCode;
-use axum::routing::{get, patch, post};
+use axum::routing::{delete, get, patch, post};
 use axum::Router;
 use std::sync::Arc;
 use tower_http::services::ServeDir;
@@ -25,7 +25,8 @@ pub fn api() -> Router<Arc<AppState>> {
         .route("/", get(handlers::api::chats::index))
         .route("/", post(handlers::api::chats::store))
         .route("/:id", get(handlers::api::chats::show))
-        .route("/:id", patch(handlers::api::chats::update));
+        .route("/:id", patch(handlers::api::chats::update))
+        .route("/:id", delete(handlers::api::chats::delete));
 
     let messages_router = Router::new()
         .route("/", get(handlers::api::messages::index))
