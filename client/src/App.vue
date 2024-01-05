@@ -4,7 +4,6 @@ import { useChatStore } from '@/stores/ChatStore'
 import ListChats from '@/components/ListChats.vue'
 import ListMessages from '@/components/ListMessages.vue'
 import StoreMessage from '@/components/StoreMessage.vue'
-import ShowChatTitle from '@/components/ShowChatTitle.vue'
 import ChevronRightIcon from '@/components/Icons/ChevronRightIcon.vue'
 import type { Chat } from '@/Models.vue'
 
@@ -86,10 +85,6 @@ const toggleSidebar = (shouldOpen: boolean) => {
 				v-if="chatStore.activeChat !== null"
 				class="flex flex-col h-screen"
 			>
-				<div class="my-6">
-					<ShowChatTitle @update-chat-title="updateChatTitle" />
-				</div>
-
 				<div class="h-full overflow-y-auto">
 					<ListMessages />
 				</div>

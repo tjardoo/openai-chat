@@ -4,9 +4,9 @@
 
 OpenAI Chat is a web app that allows you to interact with the [OpenAI API](https://beta.openai.com/). The application is build in [Rust](https://www.rust-lang.org/) and [Vue](https://vuejs.org/). The chat history is stored in a [MySQL](https://www.mysql.com/) database.
 
-You can easily start a new chat or continue an existing chat via the links in the sidebar. When a code snippet is detected, it will automatically be highlighted using [Highlight.js](https://highlightjs.org/). When enabled, it will automatically summarize the first message and use that as title for the chat.
+You can easily start a new chat or continue an existing chat via the links in the sidebar. When a code snippet is detected, it will automatically be highlighted using [Highlight.js](https://highlightjs.org/). When enabled, it will automatically summarize the first message and use that as title for the chat. In the dropdown menu, you can edit the title of a chat or delete a chat.
 
-![Screenshot](docs/screenshot.png)
+![Screenshot](docs/video.gif)
 
 ## Installation
 
@@ -23,7 +23,6 @@ Install the following dependencies:
 
 ```bash
 cargo install sqlx-cli
-
 cargo install cargo-watch
 ```
 
@@ -33,15 +32,14 @@ Run the following commands:
 
 ```bash
 sqlx migrate run
-
 cd client && npm install
 ```
 
 Copy `.env.example` to `.env` and update the environment variables.
 
-The `OPENAI_API_KEY` is required to use the OpenAI API. You can get your API key [https://beta.openai.com/account/api-keys](https://beta.openai.com/account/api-keys).
+The `OPENAI_API_KEY` is required to use the OpenAI API. You can get your API key here: [https://beta.openai.com/account/api-keys](https://beta.openai.com/account/api-keys).
 
-The `OPENAI_CHAT_SUMMARY_ENABLED` is used to decide, whether to automatically summarize the first message and use that as title for the chat.
+The `OPENAI_CHAT_SUMMARY_ENABLED` when set to `true` it will automatically summarize the first message and use that as title for the chat.
 
 ## Usage
 
@@ -49,19 +47,15 @@ The `OPENAI_CHAT_SUMMARY_ENABLED` is used to decide, whether to automatically su
 
 ```bash
 cd client && npm run build
-
 cargo run
 ```
 
 And visit [http://localhost:3000](http://localhost:3000).
 
-You can configure the URL and port in `.env`.
-
 ### Development
 
 ```bash
 cd client && npm run watch
-
 cargo watch -x run
 ```
 
@@ -71,7 +65,6 @@ Optional commands:
 
 ```bash
 sqlx migrate revert
-
 sqlx database reset
 ```
 
