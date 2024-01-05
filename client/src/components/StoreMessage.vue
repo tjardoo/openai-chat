@@ -22,7 +22,7 @@ const isLoading = ref<boolean>(false)
 const isError = ref<boolean>(false)
 const validationErrors = ref<Array<FieldValidatorError> | null>(null)
 const content = ref<TextareaHTMLAttributes['value']>('')
-const model = ref<string>('gpt-4-0613')
+const model = ref<string>('gpt-4-1106-preview')
 
 const textDecoder = new TextDecoder('utf-8')
 
@@ -35,31 +35,31 @@ const clearErrors = (): void => {
 const streamCompleted = (): void => {
 	isLoading.value = false
 
-    if (chatStore.activeChat === null) {
-        return
-    }
+	if (chatStore.activeChat === null) {
+		return
+	}
 
-    if (messagesStore.messages.length === 1) {
-        fetch(`http://localhost:3000/api/v1/chats/${chatStore.activeChat.id}`, { method: 'GET', headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': 'http://localhost:3000' } })
-            .then((response) => response.json())
-            .then((chat: Chat) => chatStore.updateActiveChatTitle(chat.title ?? 'Untitled'))
-            .catch((err) => console.log(err))
-    }
+	if (messagesStore.messages.length === 1) {
+		fetch(`http://localhost:3000/api/v1/chats/${chatStore.activeChat.id}`, { method: 'GET', headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': 'http://localhost:3000' } })
+			.then((response) => response.json())
+			.then((chat: Chat) => chatStore.updateActiveChatTitle(chat.title ?? 'Untitled'))
+			.catch((err) => console.log(err))
+	}
 
-    fetch(`http://localhost:3000/api/v1/chats/${chatStore.activeChat.id}/messages/assistant`, {
+	fetch(`http://localhost:3000/api/v1/chats/${chatStore.activeChat.id}/messages/assistant`, {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': 'http://localhost:3000' },
 		body: JSON.stringify({
-			content: messagesStore.streamingMessage,
+			content: messagesStore.streamingMessage
 		})
-    })
-    .then((response) => response.json())
-    .then((message: Message) => {
-        messagesStore.addMessage(message)
+	})
+		.then((response) => response.json())
+		.then((message: Message) => {
+			messagesStore.addMessage(message)
 
-        messagesStore.clearStreamingMessage()
-    })
-    .catch((err) => console.log(err))
+			messagesStore.clearStreamingMessage()
+		})
+		.catch((err) => console.log(err))
 }
 
 const sendMessage = (): void => {
@@ -74,16 +74,16 @@ const sendMessage = (): void => {
 		headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': 'http://localhost:3000' },
 		body: JSON.stringify({
 			content: content.value,
-			model: model.value,
+			model: model.value
 		})
 	}).then((response) => {
 		if (content.value) {
 			messagesStore.addMessage({
-                id: 0,
-                role: 'user',
-                content: content.value.toString(),
-                created_at: new Date().toISOString(),
-            })
+				id: 0,
+				role: 'user',
+				content: content.value.toString(),
+				created_at: new Date().toISOString()
+			})
 		}
 
 		content.value = ''
@@ -92,7 +92,7 @@ const sendMessage = (): void => {
 			return
 		}
 
-        let receivedChunks = ''
+		let receivedChunks = ''
 
 		const reader = response.body.getReader()
 
@@ -107,7 +107,7 @@ const sendMessage = (): void => {
 
 			console.log('Incoming: ' + receivedChunks)
 
-            messagesStore.streamMessage(receivedChunks)
+			messagesStore.streamMessage(receivedChunks)
 
 			return reader.read().then(processText)
 		})

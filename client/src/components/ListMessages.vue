@@ -1,33 +1,38 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import hljs from 'highlight.js/lib/core'
 import { decode } from 'he'
 import { useChatStore } from '@/stores/ChatStore'
 import { useMessagesStore } from '@/stores/MessagesStore'
 import type { Message } from '@/Models.vue'
+import { storeToRefs } from 'pinia'
 
 const chatStore = useChatStore()
+const chatId = storeToRefs(chatStore).id
+
 const messagesStore = useMessagesStore()
 
 const isLoading = ref<boolean>(false)
 
-chatStore.$subscribe((mutation, state) => {
-	isLoading.value = true
+watch(
+	chatId,
+	() => {
+		if (chatId.value === null) {
+			return
+		}
 
-	if (chatStore.activeChat === null) {
-		return
-	}
+		fetch(`http://localhost:3000/api/v1/chats/${chatId.value}/messages`, { method: 'GET', headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': 'http://localhost:3000' } })
+			.then((response) => response.json())
+			.then((messages: Array<Message>) => {
+				const reversedMessages = messages.reverse()
 
-	fetch(`http://localhost:3000/api/v1/chats/${chatStore.activeChat.id}/messages`, { method: 'GET', headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': 'http://localhost:3000' } })
-		.then((response) => response.json())
-		.then((messages: Array<Message>) => {
-            const reversedMessages = messages.reverse()
-
-			messagesStore.setMessages(reversedMessages)
-			isLoading.value = false
-		})
-		.catch((err) => console.log(err))
-})
+				messagesStore.setMessages(reversedMessages)
+				isLoading.value = false
+			})
+			.catch((err) => console.log(err))
+	},
+	{ immediate: true }
+)
 
 const hightlightCodeExamples = (message: string): string => {
 	const text = message.replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>')
@@ -61,7 +66,7 @@ const formatDateTime = (dateTime: string): string => {
 		class="px-2 overflow-y-auto min-h-[480px]"
 		id="messages"
 	>
-        <div
+		<div
 			class="flex justify-start mt-1 mb-3"
 			v-if="messagesStore.streamingMessage"
 		>

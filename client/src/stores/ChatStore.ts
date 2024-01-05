@@ -7,15 +7,18 @@ export const useChatStore = defineStore('chatStore', {
 			activeChat: null as Chat | null
 		}
 	},
+	getters: {
+		id: (state) => state.activeChat?.id,
+		title: (state) => state.activeChat?.title
+	},
 	actions: {
 		setActiveChat(chat: Chat) {
-            // @todo when null, it needs to triggers for the other components to update
 			this.activeChat = chat
 		},
-        updateActiveChatTitle(title: string) {
-            if (this.activeChat) {
-                this.activeChat.title = title
-            }
-        }
+		updateActiveChatTitle(title: string) {
+			if (this.activeChat) {
+				this.activeChat.title = title
+			}
+		}
 	}
 })

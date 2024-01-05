@@ -18,10 +18,10 @@ export const useMessagesStore = defineStore('messagesStore', {
 			this.messages.unshift(message)
 		},
 		streamMessage(chunk: string) {
-		    this.streamingMessage = chunk
+			this.streamingMessage = chunk
 		},
-        clearStreamingMessage() {
-            this.streamingMessage = null
-        }
+		clearStreamingMessage() {
+			this.streamingMessage = null
+		}
 	}
 })

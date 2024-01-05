@@ -28,8 +28,6 @@ const createChat = () => {
 		.then((response) => response.json())
 		.then((chat: Chat) => {
 			chatStore.setActiveChat(chat)
-
-
 		})
 		.catch((err) => console.log(err))
 }
@@ -97,9 +95,7 @@ const toggleSidebar = (shouldOpen: boolean) => {
 				</div>
 
 				<div class="h-auto">
-					<StoreMessage
-						:models="models"
-					/>
+					<StoreMessage :models="models" />
 				</div>
 			</div>
 		</main>

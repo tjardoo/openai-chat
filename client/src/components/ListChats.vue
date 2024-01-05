@@ -12,29 +12,29 @@ let chats = ref<Array<Chat>>([])
 let dropdownMenuId = ref<number | null>(null)
 
 const deleteChat = (chatId: number) => {
-    if (chatStore.activeChat?.id === chatId) {
-        chatStore.activeChat = null
-    }
+	if (chatStore.activeChat?.id === chatId) {
+		chatStore.activeChat = null
+	}
 
-    chats.value = chats.value.filter((chat) => chat.id !== chatId)
+	chats.value = chats.value.filter((chat) => chat.id !== chatId)
 
-    fetch(`http://localhost:3000/api/v1/chats/${chatId}`, { method: 'DELETE', headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': 'http://localhost:3000' } })
-        .then((response) => response)
-        .catch((err) => console.log(err))
+	fetch(`http://localhost:3000/api/v1/chats/${chatId}`, { method: 'DELETE', headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': 'http://localhost:3000' } })
+		.then((response) => response)
+		.catch((err) => console.log(err))
 }
 
 chatStore.$subscribe((mutation, state) => {
-    fetch(`http://localhost:3000/api/v1/chats`, { method: 'GET', headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': 'http://localhost:3000' } })
-        .then((response) => response.json())
-        .then((data: Array<Chat>) => (chats.value = data))
-        .catch((err) => console.log(err))
+	fetch(`http://localhost:3000/api/v1/chats`, { method: 'GET', headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': 'http://localhost:3000' } })
+		.then((response) => response.json())
+		.then((data: Array<Chat>) => (chats.value = data))
+		.catch((err) => console.log(err))
 })
 
 // upon first load, fetch chats
 fetch(`http://localhost:3000/api/v1/chats`, { method: 'GET', headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': 'http://localhost:3000' } })
-    .then((response) => response.json())
-    .then((data: Array<Chat>) => (chats.value = data))
-    .catch((err) => console.log(err))
+	.then((response) => response.json())
+	.then((data: Array<Chat>) => (chats.value = data))
+	.catch((err) => console.log(err))
 
 defineEmits(['createChat', 'toggleSidebar'])
 </script>
@@ -53,7 +53,7 @@ defineEmits(['createChat', 'toggleSidebar'])
 		<div
 			v-for="chat in chats"
 			:key="chat.id"
-            class="relative flex justify-between group"
+			class="relative flex justify-between group"
 		>
 			<button
 				@click="chatStore.setActiveChat(chat)"
@@ -66,25 +66,28 @@ defineEmits(['createChat', 'toggleSidebar'])
 				{{ chat.title ?? 'Chat ' + chat.id }}
 			</button>
 
-            <button
-                @click="dropdownMenuId = chat.id"
-                class="relative px-2 group-hover:bg-gray-600"
-                :class="{
-                    'bg-gray-600': chatStore.activeChat?.id === chat.id,
-                    'bg-gray-800': chatStore.activeChat?.id !== chat.id
-                }"
-            >
-                <DotsIcon class="text-gray-400" />
-            </button>
+			<button
+				@click="dropdownMenuId = chat.id"
+				class="relative px-2 group-hover:bg-gray-600"
+				:class="{
+					'bg-gray-600': chatStore.activeChat?.id === chat.id,
+					'bg-gray-800': chatStore.activeChat?.id !== chat.id
+				}"
+			>
+				<DotsIcon class="text-gray-400" />
+			</button>
 
-            <div class="absolute top-0 right-0 z-50 px-2 py-2 bg-gray-50" v-if="dropdownMenuId == chat.id">
-                <button
-                    @click="deleteChat(chat.id)"
-                    class="w-full px-2 py-1 text-left"
-                >
-                    Delete
-                </button>
-            </div>
+			<div
+				class="absolute top-0 right-0 z-50 px-2 py-2 bg-gray-50"
+				v-if="dropdownMenuId == chat.id"
+			>
+				<button
+					@click="deleteChat(chat.id)"
+					class="w-full px-2 py-1 text-left"
+				>
+					Delete
+				</button>
+			</div>
 		</div>
 	</div>
 </template>
