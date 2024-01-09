@@ -20,7 +20,7 @@ jobs:
             env:
               MYSQL_ALLOW_EMPTY_PASSWORD: false
               MYSQL_ROOT_PASSWORD: password
-              MYSQL_DATABASE: _openai_chat_testing
+              MYSQL_DATABASE: openai_chat_testing
             ports:
               - 3306:3306
 
@@ -28,10 +28,7 @@ jobs:
           - name: Checkout code
             uses: actions/checkout@v3
 
-          - name: Test MySQL connection
-            run: mysql mysql://root:password@127.0.0.1:3306/_openai_chat_testing -c 'SELECT 1;'
-
           - name: Cargo build
             run: cargo build --verbose
             env:
-              DATABASE_URL: mysql mysql://root:password@127.0.0.1:3306/_openai_chat_testing
+              DATABASE_URL: mysql://root:password@127.0.0.1:3306/openai_chat_testing
