@@ -10,34 +10,33 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build:
+    test:
+        name: Test
+        runs-on: ubuntu-latest
 
-    name: Build
-    runs-on: ubuntu-latest
+        services:
+          mysql:
+            image: mysql
+            env:
+              MYSQL_ALLOW_EMPTY_PASSWORD: false
+              MYSQL_ROOT_PASSWORD: password
+              MYSQL_DATABASE: _openai_chat_testing
+            ports:
+              - 3306:3306
+            options: >-
+              --health-cmd mysqladmin ping
+              --health-interval 10s
+              --health-timeout 5s
+              --health-retries 5
 
-    services:
-      mysql:
-        image: mysql:latest
-        env:
-          MYSQL_ALLOW_EMPTY_PASSWORD: false
-          MYSQL_ROOT_PASSWORD: password
-          MYSQL_DATABASE: openai_chat_testing
-          DATABASE_URL: mysql://root:password@127.0.0.1:3000/openai_chat_testing
-        ports:
-          - 3306:3306
+        steps:
+          - name: Checkout code
+            uses: actions/checkout@v3
 
-    steps:
-    - name: Checkout code
-    - uses: actions/checkout@v3
+          - name: Test MySQL connection
+            run: mysql mysql://root:password@127.0.0.1:3306/_openai_chat_testing -c 'SELECT 1;'
 
-    - name: Install sqlx-cli
-    - uses: cargo install sqlx-cli
-
-    - name: Setup database
-      run: sqlx migrate run
-
-    - name: Copy .env
-      run: cp .env.example .env
-
-    - name: Build
-      run: cargo build --verbose
+          - name: Cargo build
+            run: cargo build --verbose
+            env:
+              DATABASE_URL: mysql mysql://root:password@127.0.0.1:3306/_openai_chat_testing
