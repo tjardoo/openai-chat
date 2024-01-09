@@ -33,6 +33,8 @@ jobs:
 
           - name: Run migrations
             run: sqlx database create && sqlx migrate run
+            env:
+              DATABASE_URL: mysql://root:password@127.0.0.1:3306/openai_chat_testing
 
           - name: Cargo build
             run: cargo build --verbose
