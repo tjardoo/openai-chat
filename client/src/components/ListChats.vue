@@ -13,8 +13,6 @@ let dropdownMenuId = ref<number | null>(null)
 let editChatId = ref<number | null>(null)
 
 const deleteChat = (chatId: number) => {
-	console.log('delete chat')
-
 	if (chatStore.activeChat?.id === chatId) {
 		chatStore.activeChat = null
 	}
@@ -27,8 +25,6 @@ const deleteChat = (chatId: number) => {
 }
 
 const updateChatTitle = (title: string) => {
-	console.log('update chat title')
-
 	fetch(`http://localhost:3000/api/v1/chats/${editChatId.value}`, {
 		method: 'PATCH',
 		headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': 'http://localhost:3000' },
@@ -106,6 +102,7 @@ defineEmits(['createChat', 'toggleSidebar'])
 			>
 				<input
 					@focusout="updateChatTitle(chat.title ?? '')"
+					@keyup.enter="updateChatTitle(chat.title ?? '')"
 					type="text"
 					v-model="chat.title"
 					placeholder="Chat name"

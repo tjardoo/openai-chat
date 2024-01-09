@@ -104,9 +104,6 @@ const sendMessage = (): void => {
 			}
 
 			receivedChunks += textDecoder.decode(value)
-
-			console.log('Incoming: ' + receivedChunks)
-
 			messagesStore.streamMessage(receivedChunks)
 
 			return reader.read().then(processText)

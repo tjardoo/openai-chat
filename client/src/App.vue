@@ -31,23 +31,6 @@ const createChat = () => {
 		.catch((err) => console.log(err))
 }
 
-const updateChatTitle = (title: string) => {
-	if (chatStore.activeChat === null) {
-		return
-	}
-
-	fetch(`http://localhost:3000/api/v1/chats/${chatStore.activeChat.id}`, {
-		method: 'PATCH',
-		headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': 'http://localhost:3000' },
-		body: JSON.stringify({ title: title })
-	})
-		.then((response) => response.json())
-		.then((chat: Chat) => {
-			chatStore.activeChat = chat
-		})
-		.catch((err) => console.log(err))
-}
-
 const toggleSidebar = (shouldOpen: boolean) => {
 	isSidebarOpen.value = shouldOpen
 }
