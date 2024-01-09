@@ -10,8 +10,8 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-    test:
-        name: Test
+    build:
+        name: Build
         runs-on: ubuntu-latest
 
         services:
@@ -27,6 +27,12 @@ jobs:
         steps:
           - name: Checkout code
             uses: actions/checkout@v3
+
+          - name: Install sqlx-cli
+            run: cargo install sqlx-cli --no-default-features --features mysql
+
+          - name: Run migrations
+            run: sqlx database create && sqlx migrate run
 
           - name: Cargo build
             run: cargo build --verbose
