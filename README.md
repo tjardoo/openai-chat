@@ -37,9 +37,9 @@ cd client && npm install
 
 Copy `.env.example` to `.env` and update the environment variables.
 
-The `OPENAI_API_KEY` is required to use the OpenAI API. You can get your API key here: [https://beta.openai.com/account/api-keys](https://beta.openai.com/account/api-keys).
+`OPENAI_API_KEY` is required to use the OpenAI API. You can get your API key here: [https://platform.openai.com/api-keys](https://platform.openai.com/api-keys).
 
-The `OPENAI_CHAT_SUMMARY_ENABLED` when set to `true` it will automatically summarize the first message and use that as title for the chat.
+`OPENAI_CHAT_SUMMARY_ENABLED` set this to `true` or `false` to automatically summarize the first message and use that as title for the chat.
 
 ## Usage
 
