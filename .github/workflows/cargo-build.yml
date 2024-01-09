@@ -12,10 +12,8 @@ env:
 jobs:
   build:
 
+    name: Build
     runs-on: ubuntu-latest
-
-    steps:
-    - uses: actions/checkout@v3
 
     services:
       mysql:
@@ -27,6 +25,13 @@ jobs:
           DATABASE_URL: mysql://root:password@127.0.0.1:3000/openai_chat_testing
         ports:
           - 3306:3306
+
+    steps:
+    - name: Checkout code
+    - uses: actions/checkout@v3
+
+    - name: Install sqlx-cli
+    - uses: cargo install sqlx-cli
 
     - name: Setup database
       run: sqlx migrate run
