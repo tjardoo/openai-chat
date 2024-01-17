@@ -1,5 +1,6 @@
 use chrono::{DateTime, Utc};
 use openai_dive::v1::resources::chat::ChatMessage;
+use openai_dive::v1::resources::chat::ChatMessageContent;
 use openai_dive::v1::resources::chat::Role as DiveRole;
 use serde::{Deserialize, Serialize};
 use sqlx::prelude::FromRow;
@@ -37,7 +38,7 @@ impl From<Message> for ChatMessage {
     fn from(message: Message) -> Self {
         ChatMessage {
             role: message.role.into(),
-            content: Some(message.content),
+            content: ChatMessageContent::Text(message.content),
             tool_calls: None,
             name: None,
             tool_call_id: None,

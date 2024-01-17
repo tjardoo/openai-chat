@@ -1,6 +1,6 @@
 use openai_dive::v1::{
     api::Client,
-    resources::chat::{ChatCompletionParameters, ChatMessage},
+    resources::chat::{ChatCompletionParameters, ChatMessage, ChatMessageContent},
 };
 use sqlx::{MySql, MySqlPool, Pool};
 use std::{env, error::Error};
@@ -81,7 +81,9 @@ pub async fn update_chat_title(pool: &MySqlPool, chat_id: u32, model: &str) {
 
     let mut messages: Vec<ChatMessage> = messages.into_iter().map(ChatMessage::from).collect();
     messages.push(ChatMessage {
-        content: Some("Summarize/Explain the first question. Limit to 40 characters.".to_string()),
+        content: ChatMessageContent::Text(
+            "Summarize/Explain the first question. Limit to 40 characters.".to_string(),
+        ),
         ..Default::default()
     });
 
@@ -100,7 +102,10 @@ pub async fn update_chat_title(pool: &MySqlPool, chat_id: u32, model: &str) {
     let new_title = chat_completion_response
         .choices
         .iter()
-        .filter_map(|choice| choice.message.content.clone())
+        .filter_map(|choice| match &choice.message.content {
+            ChatMessageContent::Text(text) => Some(text.to_owned()),
+            _ => None,
+        })
         .collect::<Vec<String>>()
         .join("");
 

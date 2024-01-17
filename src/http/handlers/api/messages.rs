@@ -5,15 +5,10 @@ use axum::{
     Json,
 };
 use axum_streams::StreamBodyAs;
-use openai_dive::v1::{
-    api::Client,
-    resources::chat::{ChatCompletionParameters, ChatMessage},
-};
-use std::{env, sync::Arc};
+use std::sync::Arc;
 
 use crate::{
-    db::chat::{get_messages_by_chat_id, update_chat_last_used_model, update_chat_title},
-    dive::source_openai_stream,
+    dive::{get_stream, source_openai_stream},
     http::{requests::messages::StoreMessageRequest, validation::ValidatedJson},
     models::message::{Message, Role},
     state::{AppState, JsonError},
@@ -68,29 +63,7 @@ pub async fn store(
     .unwrap()
     .last_insert_id();
 
-    let model = request.model;
-
-    update_chat_title(&state.pool, chat_id, &model).await;
-
-    let api_key = env::var("OPENAI_API_KEY").expect("$OPENAI_API_KEY is not set");
-
-    let messages = get_messages_by_chat_id(&state.pool, chat_id).await.unwrap();
-
-    let messages: Vec<ChatMessage> = messages.into_iter().map(ChatMessage::from).collect();
-
-    update_chat_last_used_model(&state.pool, chat_id, &model)
-        .await
-        .unwrap();
-
-    let parameters = ChatCompletionParameters {
-        model,
-        messages,
-        ..Default::default()
-    };
-
-    let client = Client::new(api_key);
-
-    let stream = client.chat().create_stream(parameters).await.unwrap();
+    let stream = get_stream(&state.pool, chat_id, &request.model).await;
 
     StreamBodyAs::text(source_openai_stream(stream))
 }

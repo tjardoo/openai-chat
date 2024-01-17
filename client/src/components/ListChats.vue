@@ -53,7 +53,7 @@ watch(
 	() => {
 		fetch(`http://localhost:3000/api/v1/chats`, { method: 'GET', headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': 'http://localhost:3000' } })
 			.then((response) => response.json())
-			.then((data: Array<Chat>) => (chats.value = data))
+			.then((data: Array<Chat>) => (chats.value = data.reverse()))
 			.catch((err) => console.log(err))
 	},
 	{ deep: true, immediate: true }

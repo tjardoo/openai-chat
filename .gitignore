@@ -2,6 +2,7 @@
 output.log
 .env
 .vscode
+.idea
 /client/node_modules
 client/tsconfig.app.tsbuildinfo
 client/tsconfig.node.tsbuildinfo

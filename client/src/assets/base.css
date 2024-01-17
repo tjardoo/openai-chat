@@ -3,5 +3,5 @@
 @tailwind utilities;
 
 pre.code-wrapper {
-	@apply w-full p-3 my-3 text-left text-gray-800 bg-white border border-gray-300 rounded-lg;
+	@apply w-full p-3 my-3 overflow-x-scroll text-left text-gray-800 bg-white border border-gray-300 rounded-lg;
 }

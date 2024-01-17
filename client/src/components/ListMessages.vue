@@ -37,20 +37,26 @@ watch(
 const hightlightCodeExamples = (message: string): string => {
 	const text = message.replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>')
 
-	const regex = /<pre><code(?: class="language-(\w+)")?>([\s\S]*?)<\/code><\/pre>/g
+	const regex = /(<pre><code(?: class="language-(\w+)")?>([\s\S]*?)<\/code><\/pre>)|(`(.*?)`)|(<bold>(.*?)<\/bold>)/g
 
-	return text.replace(regex, (match, lang, code) => {
-		code = decode(code)
+	return text.replace(regex, (match, codeBlock, lang, code, backticks, content) => {
+		if (codeBlock) {
+			code = decode(code)
 
-		if (lang && hljs.getLanguage(lang)) {
-			return `<pre class="code-wrapper"><code class="language-${lang}">${hljs.highlight(code, { language: lang, ignoreIllegals: true }).value}</code></pre>`
-		} else {
-			const autoDetected = hljs.highlightAuto(code)
-
-			autoDetected.value = autoDetected.value.replace(/^.*\n/, '')
-
-			return `<pre class="code-wrapper"><code class="language-${autoDetected.language}">${autoDetected.value}</code></pre>`
+			if (lang && hljs.getLanguage(lang)) {
+				return `<pre class="code-wrapper"><code class="language-${lang}">${hljs.highlight(code, { language: lang, ignoreIllegals: true }).value}</code></pre>`
+			} else {
+				const autoDetected = hljs.highlightAuto(code)
+				autoDetected.value = autoDetected.value.replace(/^.*\n/, '')
+				return `<pre class="code-wrapper"><code class="language-${autoDetected.language}">${autoDetected.value}</code></pre>`
+			}
+		} else if (backticks) {
+			return `<span class="font-medium">\`${content}\`</span>`
+		} else if (content) {
+			return `<span class="font-medium">${content}</span>`
 		}
+
+		return match
 	})
 }
 
@@ -63,7 +69,7 @@ const formatDateTime = (dateTime: string): string => {
 
 <template>
 	<div
-		class="px-2 overflow-y-auto min-h-[480px]"
+		class="px-2 mt-4 overflow-y-auto min-h-[480px]"
 		id="messages"
 	>
 		<div
@@ -72,7 +78,7 @@ const formatDateTime = (dateTime: string): string => {
 		>
 			<div class="flex flex-col">
 				<div
-					class="flex-none px-3 py-1 font-light text-left text-gray-700 bg-gray-300 rounded-lg"
+					class="flex-none px-3 py-1 font-light text-left text-gray-700 whitespace-pre-wrap bg-gray-300 rounded-lg"
 					v-html="hightlightCodeExamples(messagesStore.streamingMessage)"
 				></div>
 			</div>
@@ -87,12 +93,12 @@ const formatDateTime = (dateTime: string): string => {
 				'justify-end': message.role === 'user'
 			}"
 		>
-			<div class="flex flex-col">
+			<div class="flex flex-col overflow-x-hidden">
 				<div
-					class="flex-none px-3 py-1 font-light rounded-lg"
+					class="flex-none w-full px-3 py-1 font-light break-words whitespace-pre-wrap rounded-lg"
 					:class="{
 						'text-left bg-gray-300 text-gray-700': message.role === 'assistant',
-						'text-right bg-blue-600 text-white': message.role === 'user'
+						'bg-blue-600 text-white': message.role === 'user'
 					}"
 					v-html="hightlightCodeExamples(message.content)"
 				></div>
