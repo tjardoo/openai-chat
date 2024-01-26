@@ -22,7 +22,7 @@ const isLoading = ref<boolean>(false)
 const isError = ref<boolean>(false)
 const validationErrors = ref<Array<FieldValidatorError> | null>(null)
 const content = ref<TextareaHTMLAttributes['value']>('')
-const model = ref<string>('gpt-4-1106-preview')
+const model = ref<string>('gpt-4-turbo-preview')
 
 const textDecoder = new TextDecoder('utf-8')
 
